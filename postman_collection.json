@@ -1,0 +1,671 @@
+{
+	"info": {
+		"_postman_id": "12345678-1234-1234-1234-123456789012",
+		"name": "Gestionale Termoidraulico API",
+		"description": "Collection per testare le API del sistema di gestione anagrafiche clienti termoidraulici",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Autenticazione",
+			"item": [
+				{
+					"name": "Register Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Admin\",\n  \"cognome\": \"Termoidraulico\",\n  \"email\": \"admin@termoidraulico.it\",\n  \"password\": \"password123\",\n  \"ruolo\": \"Amministratore\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/utenti/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["utenti", "register"]
+						}
+					}
+				},
+				{
+					"name": "Register Operatore",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Operatore\",\n  \"cognome\": \"Test\",\n  \"email\": \"operatore@termoidraulico.it\",\n  \"password\": \"password123\",\n  \"ruolo\": \"Operatore\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/utenti/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["utenti", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('authToken', response.token);",
+									"    pm.environment.set('currentUser', JSON.stringify(response.user));",
+									"    console.log('Token salvato:', response.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@termoidraulico.it\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/utenti/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["utenti", "login"]
+						}
+					}
+				},
+				{
+					"name": "Login Operatore",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('authToken', response.token);",
+									"    pm.environment.set('currentUser', JSON.stringify(response.user));",
+									"    console.log('Token salvato:', response.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"operatore@termoidraulico.it\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/utenti/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["utenti", "login"]
+						}
+					}
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/utenti/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["utenti", "me"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Gestione Clienti",
+			"item": [
+				{
+					"name": "Get All Clienti",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/clienti",
+							"host": ["{{baseUrl}}"],
+							"path": ["clienti"]
+						}
+					}
+				},
+				{
+					"name": "Get Clienti with Search",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/clienti?search=marco&provenienzaContatto=Google&consensoMarketing=true",
+							"host": ["{{baseUrl}}"],
+							"path": ["clienti"],
+							"query": [
+								{
+									"key": "search",
+									"value": "marco"
+								},
+								{
+									"key": "provenienzaContatto",
+									"value": "Google"
+								},
+								{
+									"key": "consensoMarketing",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Clienti Stats",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/clienti/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["clienti", "stats"]
+						}
+					}
+				},
+				{
+					"name": "Get Cliente by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/clienti/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["clienti", "1"]
+						}
+					}
+				},
+				{
+					"name": "Create Cliente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('lastClienteId', response.clienteId);",
+									"    console.log('Cliente creato con ID:', response.clienteId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Giuseppe\",\n  \"cognome\": \"Verdi\",\n  \"email\": \"giuseppe.verdi@email.it\",\n  \"telefono\": \"+39 320 123 4567\",\n  \"indirizzo\": \"Via della Musica 42\",\n  \"citta\": \"Parma\",\n  \"cap\": \"43100\",\n  \"provincia\": \"PR\",\n  \"provenienzaContatto\": \"Sito web\",\n  \"consensoPrivacy\": true,\n  \"consensoMarketing\": true,\n  \"note\": \"Compositore interessato a impianto smart home\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/clienti",
+							"host": ["{{baseUrl}}"],
+							"path": ["clienti"]
+						}
+					}
+				},
+				{
+					"name": "Update Cliente",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Giuseppe\",\n  \"cognome\": \"Verdi\",\n  \"email\": \"giuseppe.verdi@email.it\",\n  \"telefono\": \"+39 320 123 4567\",\n  \"indirizzo\": \"Via della Musica 42\",\n  \"citta\": \"Parma\",\n  \"cap\": \"43100\",\n  \"provincia\": \"PR\",\n  \"provenienzaContatto\": \"Sito web\",\n  \"consensoPrivacy\": true,\n  \"consensoMarketing\": false,\n  \"note\": \"Compositore - installazione completata\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/clienti/{{lastClienteId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["clienti", "{{lastClienteId}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Cliente (Admin Only)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/clienti/{{lastClienteId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["clienti", "{{lastClienteId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Password e Info (Admin Only)",
+			"item": [
+				{
+					"name": "Get All Password Info",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/password-info",
+							"host": ["{{baseUrl}}"],
+							"path": ["password-info"]
+						}
+					}
+				},
+				{
+					"name": "Get Password Info by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/password-info/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["password-info", "1"]
+						}
+					}
+				},
+				{
+					"name": "Create Password Info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('lastInfoId', response.infoId);",
+									"    console.log('Info creata con ID:', response.infoId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"titolo\": \"Account Email Aziendale\",\n  \"descrizione\": \"Password per email info@termoidraulico.it\",\n  \"valore\": \"SuperSecurePassword2024!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/password-info",
+							"host": ["{{baseUrl}}"],
+							"path": ["password-info"]
+						}
+					}
+				},
+				{
+					"name": "Update Password Info",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"titolo\": \"Account Email Aziendale - AGGIORNATO\",\n  \"descrizione\": \"Password aggiornata per email info@termoidraulico.it\",\n  \"valore\": \"NewSuperSecurePassword2024!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/password-info/{{lastInfoId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["password-info", "{{lastInfoId}}"]
+						}
+					}
+				},
+				{
+					"name": "Reveal Password Value",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/password-info/1/reveal",
+							"host": ["{{baseUrl}}"],
+							"path": ["password-info", "1", "reveal"]
+						}
+					}
+				},
+				{
+					"name": "Delete Password Info",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/password-info/{{lastInfoId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["password-info", "{{lastInfoId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Test Validazioni",
+			"item": [
+				{
+					"name": "Test Email Duplicata",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Test\",\n  \"cognome\": \"Duplicato\",\n  \"email\": \"marco.verdi@email.it\",\n  \"telefono\": \"+39 333 333 3333\",\n  \"provenienzaContatto\": \"Google\",\n  \"consensoPrivacy\": true,\n  \"consensoMarketing\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/clienti",
+							"host": ["{{baseUrl}}"],
+							"path": ["clienti"]
+						}
+					}
+				},
+				{
+					"name": "Test Consenso Privacy Mancante",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Test\",\n  \"cognome\": \"NoPrivacy\",\n  \"email\": \"test.noprivacy@email.it\",\n  \"telefono\": \"+39 333 333 3333\",\n  \"provenienzaContatto\": \"Google\",\n  \"consensoPrivacy\": false,\n  \"consensoMarketing\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/clienti",
+							"host": ["{{baseUrl}}"],
+							"path": ["clienti"]
+						}
+					}
+				},
+				{
+					"name": "Test Email Formato Non Valido",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Test\",\n  \"cognome\": \"BadEmail\",\n  \"email\": \"email-non-valida\",\n  \"telefono\": \"+39 333 333 3333\",\n  \"provenienzaContatto\": \"Google\",\n  \"consensoPrivacy\": true,\n  \"consensoMarketing\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/clienti",
+							"host": ["{{baseUrl}}"],
+							"path": ["clienti"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Server Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/../../health",
+							"host": ["{{baseUrl}}"],
+							"path": ["..", "..", "health"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000/api",
+			"type": "string"
+		}
+	]
+}
