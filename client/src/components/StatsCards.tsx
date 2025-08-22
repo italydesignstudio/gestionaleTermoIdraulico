@@ -29,20 +29,21 @@ const StatsCards: React.FC<StatsCardsProps> = ({ stats, isLoading }) => {
     );
   }
 
-  const conMarketingCount = stats.consensoMarketing.find(item => item.tipo === 'Con consenso')?.count || 0;
-  const senzaMarketingCount = stats.consensoMarketing.find(item => item.tipo === 'Senza consenso')?.count || 0;
-  const percentualeMarketing = stats.totaleClienti > 0 
-    ? Math.round((conMarketingCount / stats.totaleClienti) * 100) 
+  const conMarketingCount = stats.consensoMarketing?.find(item => item.tipo === 'Con consenso')?.count || 0;
+  const senzaMarketingCount = stats.consensoMarketing?.find(item => item.tipo === 'Senza consenso')?.count || 0;
+  const totaleClienti = stats.totaleClienti || 0;
+  const percentualeMarketing = totaleClienti > 0 
+    ? Math.round((conMarketingCount / totaleClienti) * 100) 
     : 0;
 
-  const topProvenienza = stats.provenienzaContatto.length > 0 
+  const topProvenienza = stats.provenienzaContatto?.length > 0 
     ? stats.provenienzaContatto[0] 
     : { provenienzaContatto: 'N/A', count: 0 };
 
   const statsData = [
     {
       title: 'Totale Clienti',
-      value: stats.totaleClienti,
+      value: totaleClienti,
       icon: Users,
       color: 'primary',
       description: 'Clienti registrati'
@@ -52,7 +53,7 @@ const StatsCards: React.FC<StatsCardsProps> = ({ stats, isLoading }) => {
       value: `${percentualeMarketing}%`,
       icon: CheckCircle,
       color: 'success',
-      description: `${conMarketingCount} su ${stats.totaleClienti}`
+      description: `${conMarketingCount} su ${totaleClienti}`
     },
     {
       title: 'Senza Consenso',
