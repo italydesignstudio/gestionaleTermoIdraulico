@@ -22,9 +22,25 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
       ])
     : ['http://localhost:5173', 'http://127.0.0.1:5173'];
 
+console.log('CORS Origins:', allowedOrigins);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+
 app.use(cors({
-    origin: allowedOrigins,
-    credentials: true
+    origin: function (origin, callback) {
+        // Allow requests with no origin (mobile apps, curl, etc.)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log('CORS blocked origin:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    optionsSuccessStatus: 200
 }));
 
 // Rate limiting
@@ -44,6 +60,21 @@ app.use(express.urlencoded({ extended: true }));
 
 // Logging middleware
 app.use(morgan('combined'));
+
+// Debug middleware per CORS
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path} - Origin: ${req.get('Origin')}`);
+    next();
+});
+
+// Explicit OPTIONS handler
+app.options('*', (req, res) => {
+    res.header('Access-Control-Allow-Origin', req.get('Origin'));
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.sendStatus(200);
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
