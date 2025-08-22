@@ -15,33 +15,38 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 
 // CORS configuration
-const allowedOrigins = process.env.NODE_ENV === 'production'
-    ? (process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [
-        'https://gestionale-termoidraulico.vercel.app',
-        'https://gestionale-termoidraulico-frontend.onrender.com'
-      ])
-    : ['http://localhost:5173', 'http://127.0.0.1:5173'];
+const allowedOrigins = [
+    'https://gestionale-termoidraulico-frontend.onrender.com',
+    'https://gestionale-termoidraulico.vercel.app',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173'
+];
 
 console.log('CORS Origins:', allowedOrigins);
 console.log('NODE_ENV:', process.env.NODE_ENV);
 
-app.use(cors({
-    origin: function (origin, callback) {
-        // Allow requests with no origin (mobile apps, curl, etc.)
-        if (!origin) return callback(null, true);
-        
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            console.log('CORS blocked origin:', origin);
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    optionsSuccessStatus: 200
-}));
+// Manual CORS middleware
+app.use((req, res, next) => {
+    const origin = req.get('Origin');
+    console.log(`Request from origin: ${origin}`);
+    
+    if (allowedOrigins.includes(origin)) {
+        res.header('Access-Control-Allow-Origin', origin);
+        res.header('Access-Control-Allow-Credentials', 'true');
+        res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With');
+        console.log(`CORS allowed for origin: ${origin}`);
+    } else {
+        console.log(`CORS blocked for origin: ${origin}`);
+    }
+    
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+        return;
+    }
+    
+    next();
+});
 
 // Rate limiting
 const limiter = rateLimit({
@@ -65,15 +70,6 @@ app.use(morgan('combined'));
 app.use((req, res, next) => {
     console.log(`${req.method} ${req.path} - Origin: ${req.get('Origin')}`);
     next();
-});
-
-// Explicit OPTIONS handler
-app.options('*', (req, res) => {
-    res.header('Access-Control-Allow-Origin', req.get('Origin'));
-    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.sendStatus(200);
 });
 
 // Health check endpoint
