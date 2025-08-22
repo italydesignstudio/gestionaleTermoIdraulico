@@ -16,12 +16,7 @@ COPY . .
 # Espone la porta
 EXPOSE 3000
 
-# Crea un utente non-root per sicurezza
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S node -u 1001
-
-# Cambia ownership dei file
-RUN chown -R node:nodejs /app
+# Usa l'utente esistente node
 USER node
 
 # Comando di avvio

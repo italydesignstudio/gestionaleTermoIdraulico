@@ -1,0 +1,16 @@
+version: "1"
+services:
+  - type: web
+    name: gestionale-termoidraulico-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: "*"
+    autoDeploy: true
