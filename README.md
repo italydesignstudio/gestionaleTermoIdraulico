@@ -103,3 +103,27 @@ npm run build
 - Logging completo delle operazioni
 - UI responsive con Bootstrap
 - Validazione real-time dei form
+
+## 🚀 Deployment
+
+### Quick Deploy (Recommended)
+1. **Read the deployment guide**: [DEPLOY_NOW.md](./DEPLOY_NOW.md)
+2. **Install deployment tools**:
+   ```bash
+   ./setup-tools.sh
+   ```
+3. **Auto-deploy**:
+   ```bash
+   ./deploy.sh
+   ```
+
+### Manual Deploy
+- **Backend**: Railway.app (PostgreSQL + Node.js)
+- **Frontend**: Vercel.com (React + Vite)
+
+See [DEPLOY_NOW.md](./DEPLOY_NOW.md) for detailed instructions.
+
+### Production URLs
+- Frontend: `https://your-app.vercel.app`
+- Backend API: `https://your-app.railway.app/api`
+- Health Check: `https://your-app.railway.app/api/health`

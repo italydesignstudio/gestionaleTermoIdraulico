@@ -3,43 +3,114 @@
 ## ✅ Stato Preparazione
 - ✅ Backend migrato a PostgreSQL
 - ✅ Frontend compilato senza errori 
-- ✅ File di configurazione creati
+- ✅ File di configurazione aggiornati
+- ✅ Health check endpoints configurati
+- ✅ CORS configurato per produzione
 - ✅ Pronto per deployment!
 
-## 🎯 DEPLOYMENT RAPIDO
+## 🎯 DEPLOYMENT RAPIDO (15 minuti totali)
 
-### 1. BACKEND (Railway.app) - 5 minuti
+### 1. BACKEND (Railway.app) - 7 minuti
 
+#### Step 1: Create Project
 1. **Vai su [Railway.app](https://railway.app)**
-2. **Login con GitHub**
+2. **Login con GitHub** 
 3. **New Project → Deploy from GitHub repo**
-4. **Seleziona questo repository**
-5. **Configura il servizio:**
-   - Root Directory: `server`
-   - Railway rileverà automaticamente l'app Node.js
+4. **Seleziona: `italydesignstudio/gestionaleTermoIdraulico`**
+5. **ROOT DIRECTORY: `server`** ⚠️ IMPORTANTE!
 
-6. **Aggiungi PostgreSQL:**
-   - Nel dashboard clicca "New Service"
-   - Seleziona "PostgreSQL"
-   - Railway fornirà automaticamente DATABASE_URL
+#### Step 2: Add Database
+6. **Click "Add Service" → PostgreSQL**
+7. **Aspetta il provisioning del database** (2-3 min)
 
-7. **Configura variabili d'ambiente:**
+#### Step 3: Set Variables
+8. **Variables tab → Add:**
    ```
    NODE_ENV=production
-   JWT_SECRET=tuo_super_secret_jwt_key_cambial_per_produzione_2024
-   ENCRYPTION_KEY=tuo_32_char_encryption_key_123456
-   PORT=3000
+   JWT_SECRET=gestionale-2025-super-secret-jwt-key-32-chars
+   CORS_ORIGINS=*
    ```
 
-8. **Deploy automatico** 
-   - URL Backend: `https://gestionale-termoidraulico-api.railway.app`
+#### Step 4: Deploy
+9. **Settings → Redeploy** 
+10. **Aspetta il deploy** (2-3 min)
+11. **Copia l'URL Railway** (es: https://web-production-abc123.up.railway.app)
 
-### 2. FRONTEND (Vercel) - 3 minuti
+### 2. FRONTEND (Vercel) - 8 minuti
 
+#### Step 1: Create Project  
 1. **Vai su [Vercel.com](https://vercel.com)**
 2. **Login con GitHub**
-3. **New Project → Import da GitHub**
-4. **Configura:**
+3. **New Project → Import GitHub repo**
+4. **Seleziona: `italydesignstudio/gestionaleTermoIdraulico`**
+
+#### Step 2: Configure Build
+5. **ROOT DIRECTORY: `client`** ⚠️ IMPORTANTE!
+6. **Framework Preset: Vite**
+7. **Build Command: `npm run build`**
+8. **Output Directory: `dist`**
+
+#### Step 3: Set Environment Variables
+9. **Environment Variables → Add:**
+   ```
+   VITE_API_BASE_URL = https://your-railway-url-from-step1/api
+   ```
+   (Usa l'URL copiato dal punto 11 sopra + `/api`)
+
+#### Step 4: Deploy
+10. **Click Deploy** (3-4 min)
+11. **Copia l'URL Vercel** (es: https://gestionale-abc123.vercel.app)
+
+### 3. FINAL SETUP - 2 minuti
+
+#### Update CORS
+1. **Torna su Railway → Variables**
+2. **Modifica CORS_ORIGINS:**
+   ```
+   CORS_ORIGINS=https://your-vercel-url-from-step11
+   ```
+3. **Redeploy Railway**
+
+#### Initialize Database
+4. **Railway → Console** e esegui:
+   ```bash
+   node scripts/init-admin.js
+   ```
+
+## ✅ TEST FINALE
+
+### Backend Test
+- Visita: `https://your-railway-url/api/health`
+- Dovresti vedere: `{"status":"OK",...}`
+
+### Frontend Test  
+- Visita: `https://your-vercel-url`
+- Login con: `admin` / `admin123`
+
+## 🎯 CREDENZIALI DEFAULT
+```
+Username: admin
+Password: admin123
+```
+
+**⚠️ CAMBIA LA PASSWORD APPENA ENTRI!**
+
+---
+
+## 🔥 DEPLOYMENT IN 1 COMANDO (CLI)
+
+Se preferisci usare la CLI:
+
+```bash
+# 1. Deploy Backend (Railway)
+cd server
+npx @railway/cli login
+npx @railway/cli up
+
+# 2. Deploy Frontend (Vercel)  
+cd ../client
+npx vercel --prod
+```
    - Root Directory: `client`
    - Build Command: `npm run build`
    - Output Directory: `dist`

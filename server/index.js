@@ -52,6 +52,17 @@ app.get('/health', (req, res) => {
     });
 });
 
+// API Health check endpoint (for Railway)
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        version: process.env.npm_package_version || '1.0.0',
+        environment: process.env.NODE_ENV || 'development'
+    });
+});
+
 // API Routes - l'autenticazione è gestita singolarmente in ogni route
 app.use('/api/utenti', require('./routes/utenti'));
 app.use('/api/clienti', require('./routes/clienti'));
