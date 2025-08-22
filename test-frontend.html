@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API Connection</title>
+</head>
+<body>
+    <h1>Test Connessione API</h1>
+    <button onclick="testLogin()">Test Login</button>
+    <div id="result"></div>
+
+    <script>
+        async function testLogin() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing...';
+
+            try {
+                const response = await fetch('https://gestionale-termoidraulico-api.onrender.com/api/utenti/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        email: 'admin@gestionale.local',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                result.innerHTML = `
+                    <h3>Status: ${response.status}</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <h3>Error:</h3>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

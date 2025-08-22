@@ -3,6 +3,9 @@ import { toast } from 'react-toastify';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
+console.log('API_BASE_URL configurato:', API_BASE_URL);
+console.log('Environment variables:', import.meta.env);
+
 // Configurazione axios
 const api = axios.create({
   baseURL: API_BASE_URL,

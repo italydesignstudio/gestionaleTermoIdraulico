@@ -8,6 +8,9 @@ import {
 
 class AuthService {
   async login(credentials: LoginFormData): Promise<AuthResponse> {
+    console.log('Login attempt with:', credentials);
+    console.log('API base URL:', api.defaults.baseURL);
+    
     const response = await api.post<AuthResponse>('/utenti/login', credentials);
     
     if (response.data.token) {
