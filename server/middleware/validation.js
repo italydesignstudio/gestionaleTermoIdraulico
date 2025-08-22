@@ -147,7 +147,7 @@ const validatePasswordInfo = [
         .withMessage('Categoria non valida'),
     
     body('url')
-        .optional()
+        .optional({ checkFalsy: true })
         .isURL()
         .withMessage('URL non valido')
         .isLength({ max: 500 })
