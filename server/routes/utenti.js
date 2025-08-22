@@ -97,7 +97,7 @@ router.post('/login', validateUserLogin, handleValidationErrors, async (req, res
                 email: user.email, 
                 ruolo: user.ruolo 
             },
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET || 'your_super_secret_jwt_key_change_in_production_2024',
             { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
         );
 

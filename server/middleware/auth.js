@@ -14,11 +14,11 @@ const authenticateToken = async (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_super_secret_jwt_key_change_in_production_2024');
         
         // Verifica che l'utente esista ancora
         const user = await db.get(
-            'SELECT utenteId, email, nome, cognome, ruolo FROM utenti WHERE utenteId = ?',
+            'SELECT utenteId, email, nome, cognome, ruolo FROM utenti WHERE utenteId = $1',
             [decoded.utenteId]
         );
 
