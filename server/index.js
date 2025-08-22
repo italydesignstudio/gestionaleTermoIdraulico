@@ -28,16 +28,12 @@ console.log('NODE_ENV:', process.env.NODE_ENV);
 // Manual CORS middleware
 app.use((req, res, next) => {
     const origin = req.get('Origin');
-    console.log(`Request from origin: ${origin}`);
     
     if (allowedOrigins.includes(origin)) {
         res.header('Access-Control-Allow-Origin', origin);
         res.header('Access-Control-Allow-Credentials', 'true');
         res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
         res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With');
-        console.log(`CORS allowed for origin: ${origin}`);
-    } else {
-        console.log(`CORS blocked for origin: ${origin}`);
     }
     
     if (req.method === 'OPTIONS') {
@@ -65,12 +61,6 @@ app.use(express.urlencoded({ extended: true }));
 
 // Logging middleware
 app.use(morgan('combined'));
-
-// Debug middleware per CORS
-app.use((req, res, next) => {
-    console.log(`${req.method} ${req.path} - Origin: ${req.get('Origin')}`);
-    next();
-});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
