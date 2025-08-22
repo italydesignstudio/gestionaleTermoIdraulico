@@ -113,18 +113,18 @@ router.get('/stats', authenticateToken, requireOperatorOrAdmin, async (req, res)
     try {
         // Conteggio totale clienti
         const totalResult = await db.get('SELECT COUNT(*) as total FROM clienti');
-        const total = totalResult.total;
+        const totaleClienti = parseInt(totalResult.total);
 
         // Conteggio per provenienza contatto
-        const provenienzaStats = await db.all(`
+        const provenienzaContatto = await db.all(`
             SELECT provenienzaContatto, COUNT(*) as count 
             FROM clienti 
             GROUP BY provenienzaContatto 
             ORDER BY count DESC
         `);
 
-        // Conteggio consensi marketing
-        const consensoMarketingStats = await db.all(`
+        // Conteggio consensi marketing (convertire boolean in stringa)
+        const consensoMarketingRaw = await db.all(`
             SELECT 
                 consensoMarketing,
                 COUNT(*) as count 
@@ -132,18 +132,33 @@ router.get('/stats', authenticateToken, requireOperatorOrAdmin, async (req, res)
             GROUP BY consensoMarketing
         `);
 
-        // Clienti aggiunti negli ultimi 30 giorni
-        const recentResult = await db.get(`
-            SELECT COUNT(*) as count 
+        const consensoMarketing = consensoMarketingRaw.map(item => ({
+            tipo: item.consensomarketing ? 'Con consenso' : 'Senza consenso',
+            count: parseInt(item.count)
+        }));
+
+        // Andamento mensile (ultimi 12 mesi)
+        const andamentoMensile = await db.all(`
+            SELECT 
+                TO_CHAR(dataCreazione, 'YYYY-MM') as mese,
+                COUNT(*) as count
             FROM clienti 
-            WHERE dataCreazione >= NOW() - INTERVAL '30 days'
+            WHERE dataCreazione >= NOW() - INTERVAL '12 months'
+            GROUP BY TO_CHAR(dataCreazione, 'YYYY-MM')
+            ORDER BY mese DESC
         `);
 
         res.json({
-            total,
-            provenienzaStats,
-            consensoMarketingStats,
-            recentClients: recentResult.count
+            totaleClienti,
+            provenienzaContatto: provenienzaContatto.map(item => ({
+                provenienzaContatto: item.provenienzacontatto,
+                count: parseInt(item.count)
+            })),
+            consensoMarketing,
+            andamentoMensile: andamentoMensile.map(item => ({
+                mese: item.mese,
+                count: parseInt(item.count)
+            }))
         });
 
     } catch (error) {
