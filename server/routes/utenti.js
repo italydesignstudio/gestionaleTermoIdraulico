@@ -59,6 +59,9 @@ router.post('/register', validateUserRegistration, handleValidationErrors, async
 // POST /api/utenti/login - Login utente
 router.post('/login', validateUserLogin, handleValidationErrors, async (req, res) => {
     try {
+        console.log('Login request received:', req.body);
+        console.log('Request headers:', req.headers);
+        
         const { email, password } = req.body;
 
         // Trova utente
@@ -67,7 +70,10 @@ router.post('/login', validateUserLogin, handleValidationErrors, async (req, res
             [email]
         );
 
+        console.log('User found:', user ? 'Yes' : 'No');
+
         if (!user) {
+            console.log('User not found for email:', email);
             return res.status(401).json({
                 error: 'Credenziali non valide',
                 code: 'INVALID_CREDENTIALS'
@@ -76,7 +82,10 @@ router.post('/login', validateUserLogin, handleValidationErrors, async (req, res
 
         // Verifica password
         const validPassword = await bcrypt.compare(password, user.password);
+        console.log('Password valid:', validPassword);
+        
         if (!validPassword) {
+            console.log('Invalid password for user:', email);
             return res.status(401).json({
                 error: 'Credenziali non valide',
                 code: 'INVALID_CREDENTIALS'
