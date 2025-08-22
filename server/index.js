@@ -16,7 +16,10 @@ app.use(helmet());
 
 // CORS configuration
 const allowedOrigins = process.env.NODE_ENV === 'production'
-    ? (process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : ['https://gestionale-termoidraulico.vercel.app'])
+    ? (process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [
+        'https://gestionale-termoidraulico.vercel.app',
+        'https://gestionale-termoidraulico-frontend.onrender.com'
+      ])
     : ['http://localhost:5173', 'http://127.0.0.1:5173'];
 
 app.use(cors({
