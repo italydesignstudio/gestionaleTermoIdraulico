@@ -7,6 +7,11 @@ import { AuthProvider } from './contexts/AuthContext.tsx'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
 
+// Debug: Log environment on startup
+console.log('🚀 Frontend started');
+console.log('🔧 Environment:', import.meta.env.MODE);
+console.log('🌐 API URL:', import.meta.env.VITE_API_BASE_URL || 'NOT SET');
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

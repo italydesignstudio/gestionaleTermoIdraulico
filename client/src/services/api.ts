@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { toast } from 'react-toastify';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://gestionale-termoidraulico-api.onrender.com/api';
 
 console.log('API_BASE_URL configurato:', API_BASE_URL);
 console.log('Environment variables:', import.meta.env);
