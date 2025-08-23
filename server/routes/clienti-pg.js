@@ -64,10 +64,10 @@ router.get('/', authenticateToken, requireOperatorOrAdmin, async (req, res) => {
         const offset = (page - 1) * limit;
         const dataSql = `
             SELECT 
-                clienteId, nome, cognome, email, telefono, 
-                indirizzo, citta, cap, provincia, provenienzaContatto,
-                consensoPrivacy, consensoMarketing, note,
-                dataCreazione, dataModifica
+                clienteId as "clienteId", nome, cognome, email, telefono, 
+                indirizzo, citta, cap, provincia, provenienzaContatto as "provenienzaContatto",
+                consensoPrivacy as "consensoPrivacy", consensoMarketing as "consensoMarketing", note,
+                dataCreazione as "dataCreazione", dataModifica as "dataModifica"
             FROM clienti 
             ${whereClause}
             ORDER BY ${finalSortBy} ${finalSortOrder}
@@ -177,11 +177,21 @@ router.get('/:id', authenticateToken, requireOperatorOrAdmin, async (req, res) =
 
         const cliente = await db.get(`
             SELECT 
-                c.*,
-                uc.nome as nomeUtenteCreazione,
-                uc.cognome as cognomeUtenteCreazione,
-                um.nome as nomeUtenteModifica,
-                um.cognome as cognomeUtenteModifica
+                c.clienteId as "clienteId",
+                c.nome, c.cognome, c.email, c.telefono,
+                c.indirizzo, c.citta, c.cap, c.provincia,
+                c.provenienzaContatto as "provenienzaContatto",
+                c.consensoPrivacy as "consensoPrivacy",
+                c.consensoMarketing as "consensoMarketing",
+                c.note,
+                c.dataCreazione as "dataCreazione",
+                c.dataModifica as "dataModifica",
+                c.utenteCreazione as "utenteCreazione",
+                c.utenteModifica as "utenteModifica",
+                uc.nome as "nomeUtenteCreazione",
+                uc.cognome as "cognomeUtenteCreazione",
+                um.nome as "nomeUtenteModifica",
+                um.cognome as "cognomeUtenteModifica"
             FROM clienti c
             LEFT JOIN utenti uc ON c.utenteCreazione = uc.utenteId
             LEFT JOIN utenti um ON c.utenteModifica = um.utenteId

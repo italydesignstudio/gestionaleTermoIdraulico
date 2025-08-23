@@ -4,8 +4,8 @@ import { DocumentoCliente, DocumentoFormData, TipoDocumento } from '../types';
 export const documentiService = {
   // Ottenere tutti i documenti di un cliente
   async getDocumentiCliente(clienteId: number): Promise<DocumentoCliente[]> {
-    const response = await api.get(`/api/documenti/cliente/${clienteId}`);
-    return response.data;
+    const response = await api.get(`/documenti/cliente/${clienteId}`);
+    return response.data.documenti || [];
   },
 
   // Caricare un nuovo documento
@@ -18,7 +18,7 @@ export const documentiService = {
     }
     uploadData.append('documento', formData.file);
 
-    const response = await api.post(`/api/documenti/cliente/${clienteId}`, uploadData, {
+    const response = await api.post(`/documenti/cliente/${clienteId}`, uploadData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -28,7 +28,7 @@ export const documentiService = {
 
   // Scaricare un documento
   async downloadDocumento(documentoId: number): Promise<Blob> {
-    const response = await api.get(`/api/documenti/${documentoId}/download`, {
+    const response = await api.get(`/documenti/${documentoId}/download`, {
       responseType: 'blob',
     });
     return response.data;
@@ -36,7 +36,7 @@ export const documentiService = {
 
   // Ottenere dettagli di un documento
   async getDocumento(documentoId: number): Promise<DocumentoCliente> {
-    const response = await api.get(`/api/documenti/${documentoId}`);
+    const response = await api.get(`/documenti/${documentoId}`);
     return response.data;
   },
 
@@ -45,30 +45,30 @@ export const documentiService = {
     documentoId: number, 
     updates: Partial<Pick<DocumentoFormData, 'titolo' | 'descrizione' | 'tipoDocumento'>>
   ): Promise<DocumentoCliente> {
-    const response = await api.put(`/api/documenti/${documentoId}`, updates);
+    const response = await api.put(`/documenti/${documentoId}`, updates);
     return response.data;
   },
 
   // Eliminare un documento
   async deleteDocumento(documentoId: number): Promise<void> {
-    await api.delete(`/api/documenti/${documentoId}`);
+    await api.delete(`/documenti/${documentoId}`);
   },
 
   // Ottenere documenti per tipo
   async getDocumentiPerTipo(clienteId: number, tipoDocumento: TipoDocumento): Promise<DocumentoCliente[]> {
-    const response = await api.get(`/api/documenti/cliente/${clienteId}/tipo/${tipoDocumento}`);
+    const response = await api.get(`/documenti/cliente/${clienteId}/tipo/${tipoDocumento}`);
     return response.data;
   },
 
   // Cercare documenti
   async searchDocumenti(clienteId: number, searchTerm: string): Promise<DocumentoCliente[]> {
-    const response = await api.get(`/api/documenti/cliente/${clienteId}/search?q=${encodeURIComponent(searchTerm)}`);
+    const response = await api.get(`/documenti/cliente/${clienteId}/search?q=${encodeURIComponent(searchTerm)}`);
     return response.data;
   },
 
   // Utility per creare URL di download
   getDownloadUrl(documentoId: number): string {
-    return `/api/documenti/${documentoId}/download`;
+    return `/documenti/${documentoId}/download`;
   },
 
   // Utility per validare il tipo di file

@@ -12,13 +12,13 @@ import {
 export const comunicazioniService = {
   // Ottenere tutte le comunicazioni di un cliente
   async getComunicazioniCliente(clienteId: number): Promise<ComunicazioneCliente[]> {
-    const response = await api.get(`/api/comunicazioni/cliente/${clienteId}`);
-    return response.data;
+    const response = await api.get(`/comunicazioni/cliente/${clienteId}`);
+    return response.data.comunicazioni || [];
   },
 
   // Creare una nuova comunicazione
   async createComunicazione(clienteId: number, formData: ComunicazioneFormData): Promise<ComunicazioneCliente> {
-    const response = await api.post(`/api/comunicazioni/cliente/${clienteId}`, formData);
+    const response = await api.post(`/comunicazioni/cliente/${clienteId}`, formData);
     return response.data;
   },
 
@@ -27,49 +27,49 @@ export const comunicazioniService = {
     comunicazioneId: number, 
     updates: Partial<ComunicazioneFormData>
   ): Promise<ComunicazioneCliente> {
-    const response = await api.put(`/api/comunicazioni/${comunicazioneId}`, updates);
+    const response = await api.put(`/comunicazioni/${comunicazioneId}`, updates);
     return response.data;
   },
 
   // Eliminare una comunicazione
   async deleteComunicazione(comunicazioneId: number): Promise<void> {
-    await api.delete(`/api/comunicazioni/${comunicazioneId}`);
+    await api.delete(`/comunicazioni/${comunicazioneId}`);
   },
 
   // Segnare come letta
   async markAsRead(comunicazioneId: number): Promise<ComunicazioneCliente> {
-    const response = await api.patch(`/api/comunicazioni/${comunicazioneId}/read`);
+    const response = await api.patch(`/comunicazioni/${comunicazioneId}/read`);
     return response.data;
   },
 
   // Ottenere comunicazioni per tipo
   async getComunicazioniPerTipo(clienteId: number, tipo: TipoComunicazione): Promise<ComunicazioneCliente[]> {
-    const response = await api.get(`/api/comunicazioni/cliente/${clienteId}/tipo/${tipo}`);
-    return response.data;
+    const response = await api.get(`/comunicazioni/cliente/${clienteId}/tipo/${tipo}`);
+    return response.data.comunicazioni || [];
   },
 
   // Ottenere comunicazioni per priorità
   async getComunicazioniPerPriorita(clienteId: number, priorita: Priorita): Promise<ComunicazioneCliente[]> {
-    const response = await api.get(`/api/comunicazioni/cliente/${clienteId}/priorita/${priorita}`);
+    const response = await api.get(`/comunicazioni/cliente/${clienteId}/priorita/${priorita}`);
     return response.data;
   },
 
   // Cercare comunicazioni
   async searchComunicazioni(clienteId: number, searchTerm: string): Promise<ComunicazioneCliente[]> {
-    const response = await api.get(`/api/comunicazioni/cliente/${clienteId}/search?q=${encodeURIComponent(searchTerm)}`);
+    const response = await api.get(`/comunicazioni/cliente/${clienteId}/search?q=${encodeURIComponent(searchTerm)}`);
     return response.data;
   },
 
   // Ottenere link WhatsApp per un cliente
   async getWhatsAppLink(clienteId: number, messaggio?: string): Promise<WhatsAppLink> {
     const params = messaggio ? `?messaggio=${encodeURIComponent(messaggio)}` : '';
-    const response = await api.get(`/api/comunicazioni/cliente/${clienteId}/whatsapp${params}`);
+    const response = await api.get(`/comunicazioni/cliente/${clienteId}/whatsapp${params}`);
     return response.data;
   },
 
   // Ottenere link chiamata per un cliente
   async getCallLink(clienteId: number): Promise<CallLink> {
-    const response = await api.get(`/api/comunicazioni/cliente/${clienteId}/call`);
+    const response = await api.get(`/comunicazioni/cliente/${clienteId}/call`);
     return response.data;
   },
 
@@ -82,7 +82,7 @@ export const comunicazioniService = {
       if (corpo) searchParams.append('corpo', corpo);
       params = `?${searchParams.toString()}`;
     }
-    const response = await api.get(`/api/comunicazioni/cliente/${clienteId}/email${params}`);
+    const response = await api.get(`/comunicazioni/cliente/${clienteId}/email${params}`);
     return response.data;
   },
 
