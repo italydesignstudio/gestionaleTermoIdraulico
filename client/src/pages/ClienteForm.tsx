@@ -75,17 +75,17 @@ const ClienteForm: React.FC = () => {
       setLoadingData(true);
       const cliente = await clientiService.getById(clienteId);
       setFormData({
-        nome: cliente.nome,
-        cognome: cliente.cognome,
-        email: cliente.email,
+        nome: cliente.nome || '',
+        cognome: cliente.cognome || '',
+        email: cliente.email || '',
         telefono: cliente.telefono || '',
         indirizzo: cliente.indirizzo || '',
         citta: cliente.citta || '',
         cap: cliente.cap || '',
         provincia: cliente.provincia || '',
-        provenienzaContatto: cliente.provenienzaContatto,
-        consensoPrivacy: cliente.consensoPrivacy,
-        consensoMarketing: cliente.consensoMarketing,
+        provenienzaContatto: cliente.provenienzaContatto || 'Altro',
+        consensoPrivacy: Boolean(cliente.consensoPrivacy),
+        consensoMarketing: Boolean(cliente.consensoMarketing),
         note: cliente.note || ''
       });
     } catch (error) {
@@ -137,7 +137,11 @@ const ClienteForm: React.FC = () => {
       navigate('/clienti');
     } catch (error: any) {
       console.error('Errore nel salvataggio:', error);
-      const message = error.response?.data?.message || 'Errore nel salvataggio del cliente';
+      console.error('Response data:', error.response?.data);
+      console.error('Response status:', error.response?.status);
+      console.error('Form data inviato:', formData);
+      
+      const message = error.response?.data?.message || error.response?.data?.error || 'Errore nel salvataggio del cliente';
       toast.error(message);
     } finally {
       setLoading(false);
