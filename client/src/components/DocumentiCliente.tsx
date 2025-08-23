@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Card, Button, Form, Row, Col, Table, Badge, InputGroup, Alert } from 'react-bootstrap';
+import { FileText, Upload, Download, Trash2, Search, Filter, Plus, X } from 'lucide-react';
 import { DocumentoCliente, TipoDocumento, DocumentoFormData } from '../types';
 import { documentiService } from '../services/documentiService';
 import { toast } from 'react-toastify';
@@ -48,13 +50,9 @@ const DocumentiCliente: React.FC<DocumentiClienteProps> = ({ clienteId, nomeClie
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!documentiService.isFileTypeAllowed(file)) {
-      toast.error('Tipo di file non supportato');
-      return;
-    }
-
-    if (!documentiService.isFileSizeAllowed(file)) {
-      toast.error('File troppo grande (max 10MB)');
+    // Verifica dimensione file (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Il file è troppo grande. Dimensione massima: 10MB');
       return;
     }
 
@@ -63,19 +61,15 @@ const DocumentiCliente: React.FC<DocumentiClienteProps> = ({ clienteId, nomeClie
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFile || !formData.titolo.trim()) {
-      toast.error('Seleziona un file e inserisci un titolo');
-      return;
-    }
+    if (!selectedFile) return;
 
     try {
       setUploading(true);
-      const uploadData: DocumentoFormData = {
+      await documentiService.uploadDocumento(clienteId, {
         ...formData,
         file: selectedFile
-      };
+      });
       
-      await documentiService.uploadDocumento(clienteId, uploadData);
       toast.success('Documento caricato con successo');
       
       // Reset form
@@ -139,201 +133,245 @@ const DocumentiCliente: React.FC<DocumentiClienteProps> = ({ clienteId, nomeClie
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="d-flex justify-content-center align-items-center p-4">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Caricamento...</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl font-semibold text-gray-800">
-          📁 Documenti di {nomeCliente}
-        </h3>
-        <button
+    <Card className="mb-4">
+      <Card.Header className="d-flex justify-content-between align-items-center">
+        <div className="d-flex align-items-center">
+          <FileText size={20} className="me-2 text-primary" />
+          <h5 className="mb-0">Documenti di {nomeCliente}</h5>
+        </div>
+        <Button
+          variant={showUploadForm ? "outline-secondary" : "primary"}
+          size="sm"
           onClick={() => setShowUploadForm(!showUploadForm)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          className="d-flex align-items-center"
         >
-          {showUploadForm ? 'Annulla' : '+ Carica Documento'}
-        </button>
-      </div>
+          {showUploadForm ? <X size={16} className="me-1" /> : <Plus size={16} className="me-1" />}
+          {showUploadForm ? 'Annulla' : 'Carica Documento'}
+        </Button>
+      </Card.Header>
 
-      {/* Form di upload */}
-      {showUploadForm && (
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <form onSubmit={handleUpload} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tipo Documento *
-                </label>
-                <select
-                  value={formData.tipoDocumento}
-                  onChange={(e) => setFormData({...formData, tipoDocumento: e.target.value as TipoDocumento})}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  required
-                >
-                  {tipiDocumento.map(tipo => (
-                    <option key={tipo} value={tipo}>{tipo}</option>
-                  ))}
-                </select>
-              </div>
+      <Card.Body>
+        {/* Form di upload */}
+        {showUploadForm && (
+          <Card className="mb-4 border-primary">
+            <Card.Body className="bg-light">
+              <Form onSubmit={handleUpload}>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Tipo Documento *</Form.Label>
+                      <Form.Select
+                        value={formData.tipoDocumento}
+                        onChange={(e) => setFormData({...formData, tipoDocumento: e.target.value as TipoDocumento})}
+                        required
+                      >
+                        {tipiDocumento.map(tipo => (
+                          <option key={tipo} value={tipo}>{tipo}</option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Titolo *
-                </label>
-                <input
-                  type="text"
-                  value={formData.titolo}
-                  onChange={(e) => setFormData({...formData, titolo: e.target.value})}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Inserisci il titolo del documento"
-                  required
-                />
-              </div>
-            </div>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Titolo *</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={formData.titolo}
+                        onChange={(e) => setFormData({...formData, titolo: e.target.value})}
+                        placeholder="Inserisci il titolo del documento"
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Descrizione
-              </label>
-              <textarea
-                value={formData.descrizione}
-                onChange={(e) => setFormData({...formData, descrizione: e.target.value})}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                rows={2}
-                placeholder="Descrizione opzionale"
-              />
-            </div>
+                <Form.Group className="mb-3">
+                  <Form.Label>Descrizione</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={2}
+                    value={formData.descrizione}
+                    onChange={(e) => setFormData({...formData, descrizione: e.target.value})}
+                    placeholder="Descrizione opzionale"
+                  />
+                </Form.Group>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                File *
-              </label>
-              <input
-                type="file"
-                onChange={handleFileSelect}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.txt"
-                required
-              />
-              {selectedFile && (
-                <p className="text-sm text-gray-600 mt-1">
-                  File selezionato: {selectedFile.name} ({documentiService.formatFileSize(selectedFile.size)})
-                </p>
-              )}
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                disabled={uploading || !selectedFile}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors"
-              >
-                {uploading ? 'Caricamento...' : 'Carica Documento'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowUploadForm(false);
-                  setSelectedFile(null);
-                  setFormData({
-                    tipoDocumento: 'Altro',
-                    titolo: '',
-                    descrizione: ''
-                  });
-                }}
-                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-              >
-                Annulla
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Filtri */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="flex-1">
-          <input
-            type="text"
-            placeholder="Cerca documenti..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div className="sm:w-48">
-          <select
-            value={filtroTipo}
-            onChange={(e) => setFiltroTipo(e.target.value as TipoDocumento | 'Tutti')}
-            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="Tutti">Tutti i tipi</option>
-            {tipiDocumento.map(tipo => (
-              <option key={tipo} value={tipo}>{tipo}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Lista documenti */}
-      {documentiFiltered.length === 0 ? (
-        <div className="text-center text-gray-500 py-8">
-          {documenti.length === 0 
-            ? 'Nessun documento caricato per questo cliente'
-            : 'Nessun documento corrisponde ai filtri selezionati'
-          }
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {documentiFiltered.map((documento) => (
-            <div key={documento.documentoId} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                      {documento.tipoDocumento}
-                    </span>
-                    <h4 className="font-medium text-gray-900">{documento.titolo}</h4>
-                  </div>
-                  
-                  {documento.descrizione && (
-                    <p className="text-sm text-gray-600 mb-2">{documento.descrizione}</p>
+                <Form.Group className="mb-3">
+                  <Form.Label>File *</Form.Label>
+                  <Form.Control
+                    type="file"
+                    onChange={handleFileSelect}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.txt"
+                    required
+                  />
+                  {selectedFile && (
+                    <Form.Text className="text-muted">
+                      File selezionato: {selectedFile.name} ({documentiService.formatFileSize(selectedFile.size)})
+                    </Form.Text>
                   )}
-                  
-                  <div className="flex items-center gap-4 text-xs text-gray-500">
-                    <span>📄 {documento.nomeFile}</span>
-                    <span>📊 {documentiService.formatFileSize(documento.dimensioneFile)}</span>
-                    <span>📅 {new Date(documento.dataCreazione).toLocaleDateString('it-IT')}</span>
-                    <span>👤 {documento.nomeUtenteCreazione} {documento.cognomeUtenteCreazione}</span>
-                  </div>
-                </div>
-                
-                <div className="flex gap-2 ml-4">
-                  <button
-                    onClick={() => handleDownload(documento)}
-                    className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors"
-                    title="Scarica documento"
+                </Form.Group>
+
+                <div className="d-flex gap-2">
+                  <Button
+                    type="submit"
+                    variant="success"
+                    disabled={uploading || !selectedFile}
+                    className="d-flex align-items-center"
                   >
-                    ⬇️ Scarica
-                  </button>
-                  <button
-                    onClick={() => handleDelete(documento.documentoId)}
-                    className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors"
-                    title="Elimina documento"
+                    {uploading ? (
+                      <>
+                        <div className="spinner-border spinner-border-sm me-2" role="status">
+                          <span className="visually-hidden">Caricamento...</span>
+                        </div>
+                        Caricamento...
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={16} className="me-1" />
+                        Carica Documento
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline-secondary"
+                    onClick={() => {
+                      setShowUploadForm(false);
+                      setSelectedFile(null);
+                      setFormData({
+                        tipoDocumento: 'Altro',
+                        titolo: '',
+                        descrizione: ''
+                      });
+                    }}
                   >
-                    🗑️ Elimina
-                  </button>
+                    Annulla
+                  </Button>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+              </Form>
+            </Card.Body>
+          </Card>
+        )}
+
+        {/* Filtri */}
+        <Row className="mb-3">
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label>Cerca documenti</Form.Label>
+              <InputGroup>
+                <InputGroup.Text>
+                  <Search size={16} />
+                </InputGroup.Text>
+                <Form.Control
+                  type="text"
+                  placeholder="Cerca per titolo, descrizione o nome file..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </InputGroup>
+            </Form.Group>
+          </Col>
+          <Col md={3}>
+            <Form.Group>
+              <Form.Label>Filtra per tipo</Form.Label>
+              <Form.Select
+                value={filtroTipo}
+                onChange={(e) => setFiltroTipo(e.target.value as TipoDocumento | 'Tutti')}
+              >
+                <option value="Tutti">Tutti i tipi</option>
+                {tipiDocumento.map(tipo => (
+                  <option key={tipo} value={tipo}>{tipo}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+        </Row>
+
+        {/* Lista documenti */}
+        {documentiFiltered.length === 0 ? (
+          <Alert variant="info" className="text-center">
+            <FileText size={48} className="mb-3 opacity-50" />
+            <h6>Nessun documento trovato</h6>
+            <p className="mb-0">Non ci sono documenti per questo cliente o nessun documento corrisponde ai filtri selezionati.</p>
+          </Alert>
+        ) : (
+          <div className="table-responsive">
+            <Table hover>
+              <thead className="table-dark">
+                <tr>
+                  <th>Documento</th>
+                  <th>Tipo</th>
+                  <th>Data Caricamento</th>
+                  <th>Dimensione</th>
+                  <th>Azioni</th>
+                </tr>
+              </thead>
+              <tbody>
+                {documentiFiltered.map((documento) => (
+                  <tr key={documento.documentoId}>
+                    <td>
+                      <div>
+                        <strong>{documento.titolo}</strong>
+                        <br />
+                        <small className="text-muted">{documento.nomeFile}</small>
+                        {documento.descrizione && (
+                          <>
+                            <br />
+                            <small className="text-muted">{documento.descrizione}</small>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <Badge bg="info">{documento.tipoDocumento}</Badge>
+                    </td>
+                    <td className="small text-muted">
+                      {new Date(documento.dataCreazione).toLocaleDateString('it-IT')}
+                    </td>
+                    <td className="small text-muted">
+                      {documento.dimensioneFile ? 
+                        `${(documento.dimensioneFile / 1024 / 1024).toFixed(2)} MB` : 
+                        'N/A'
+                      }
+                    </td>
+                    <td>
+                      <div className="btn-group btn-group-sm">
+                        <Button
+                          variant="outline-success"
+                          size="sm"
+                          onClick={() => handleDownload(documento)}
+                          title="Scarica documento"
+                        >
+                          <Download size={14} />
+                        </Button>
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          onClick={() => handleDelete(documento.documentoId)}
+                          title="Elimina documento"
+                        >
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        )}
+      </Card.Body>
+    </Card>
   );
 };
 
