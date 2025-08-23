@@ -19,7 +19,11 @@ const allowedOrigins = [
     'https://gestionale-termoidraulico-frontend.onrender.com',
     'https://gestionale-termoidraulico.vercel.app',
     'http://localhost:5173',
-    'http://127.0.0.1:5173'
+    'http://localhost:5174',
+    'http://localhost:5175',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174',
+    'http://127.0.0.1:5175'
 ];
 
 console.log('CORS Origins:', allowedOrigins);
@@ -87,6 +91,8 @@ app.get('/api/health', (req, res) => {
 app.use('/api/utenti', require('./routes/utenti'));
 app.use('/api/clienti', require('./routes/clienti'));
 app.use('/api/password-info', require('./routes/password-info'));
+app.use('/api/documenti', require('./routes/documenti'));
+app.use('/api/comunicazioni', require('./routes/comunicazioni'));
 
 // 404 handler
 app.use('/api/*', (req, res) => {

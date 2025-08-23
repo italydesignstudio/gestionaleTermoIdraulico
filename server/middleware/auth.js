@@ -29,7 +29,14 @@ const authenticateToken = async (req, res, next) => {
             });
         }
 
-        req.user = user;
+        // PostgreSQL restituisce campi in lowercase, normalizziamo per compatibilità
+        req.user = {
+            utenteId: user.utenteid || user.utenteId,
+            email: user.email,
+            nome: user.nome,
+            cognome: user.cognome,
+            ruolo: user.ruolo
+        };
         next();
     } catch (error) {
         if (error.name === 'TokenExpiredError') {

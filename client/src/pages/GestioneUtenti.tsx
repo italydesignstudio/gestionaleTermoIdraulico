@@ -245,8 +245,8 @@ const GestioneUtenti: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {utenti.map((user) => (
-                        <tr key={user.utenteId}>
+                      {utenti.map((user, index) => (
+                        <tr key={user.utenteId || `user-${index}`}>
                           <td className="fw-bold">{user.nome}</td>
                           <td>{user.cognome}</td>
                           <td>

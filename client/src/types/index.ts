@@ -172,3 +172,85 @@ export interface SearchFilters {
   sortBy?: string;
   sortOrder?: 'ASC' | 'DESC';
 }
+
+// Nuove interfacce per documenti e comunicazioni
+export interface DocumentoCliente {
+  documentoId: number;
+  clienteId: number;
+  tipoDocumento: TipoDocumento;
+  titolo: string;
+  descrizione?: string;
+  nomeFile: string;
+  dimensioneFile: number;
+  mimeType: string;
+  dataCreazione: string;
+  nomeUtenteCreazione: string;
+  cognomeUtenteCreazione: string;
+}
+
+export type TipoDocumento = 
+  | 'Fattura' 
+  | 'Scontrino' 
+  | 'Libretto' 
+  | 'Preventivo' 
+  | 'Contratto' 
+  | 'Certificazione' 
+  | 'Garanzia' 
+  | 'Altro';
+
+export interface ComunicazioneCliente {
+  comunicazioneId: number;
+  clienteId: number;
+  tipoComunicazione: TipoComunicazione;
+  oggetto?: string;
+  contenuto: string;
+  dataOra: string;
+  statoLettura: boolean;
+  priorita: Priorita;
+  nomeUtenteCreazione: string;
+  cognomeUtenteCreazione: string;
+}
+
+export type TipoComunicazione = 
+  | 'Chiamata' 
+  | 'WhatsApp' 
+  | 'Email' 
+  | 'SMS' 
+  | 'Nota' 
+  | 'Promemoria' 
+  | 'Altro';
+
+export type Priorita = 'Bassa' | 'Media' | 'Alta' | 'Urgente';
+
+export interface ComunicazioneFormData {
+  tipoComunicazione: TipoComunicazione;
+  oggetto?: string;
+  contenuto: string;
+  priorita?: Priorita;
+}
+
+export interface DocumentoFormData {
+  tipoDocumento: TipoDocumento;
+  titolo: string;
+  descrizione?: string;
+  file: File;
+}
+
+// Interfacce per i links di azione
+export interface WhatsAppLink {
+  whatsappUrl: string;
+  numeroTelefono: string;
+  nomeCliente: string;
+}
+
+export interface CallLink {
+  callUrl: string;
+  numeroTelefono: string;
+  nomeCliente: string;
+}
+
+export interface EmailLink {
+  mailtoUrl: string;
+  emailCliente: string;
+  nomeCliente: string;
+}

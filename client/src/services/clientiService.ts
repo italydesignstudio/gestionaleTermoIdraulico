@@ -1,7 +1,5 @@
-import axios from 'axios';
+import api from './api';
 import { Cliente, ClienteFormData, StatsResponse, SearchFilters } from '../types';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://gestionale-termoidraulico-api.onrender.com/api';
 
 const clientiService = {
   getAll: async (filters?: {
@@ -9,66 +7,45 @@ const clientiService = {
     provenienzaContatto?: string;
     consensoMarketing?: boolean;
   }): Promise<Cliente[]> => {
-    const token = localStorage.getItem('authToken');
     const params = new URLSearchParams();
     
     if (filters?.search) params.append('search', filters.search);
     if (filters?.provenienzaContatto) params.append('provenienzaContatto', filters.provenienzaContatto);
     if (filters?.consensoMarketing !== undefined) params.append('consensoMarketing', filters.consensoMarketing.toString());
     
-    const response = await axios.get<{ clienti: Cliente[] }>(`${API_BASE_URL}/clienti?${params}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await api.get<{ clienti: Cliente[] }>(`/clienti?${params}`);
     
     return response.data.clienti;
   },
 
   getById: async (id: number): Promise<Cliente> => {
-    const token = localStorage.getItem('authToken');
-    const response = await axios.get<{ cliente: Cliente }>(`${API_BASE_URL}/clienti/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await api.get<{ cliente: Cliente }>(`/clienti/${id}`);
     
     return response.data.cliente;
   },
 
   create: async (cliente: ClienteFormData): Promise<{ message: string; clienteId: number }> => {
-    const token = localStorage.getItem('authToken');
-    const response = await axios.post<{ message: string; clienteId: number }>(`${API_BASE_URL}/clienti`, cliente, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await api.post<{ message: string; clienteId: number }>(`/clienti`, cliente);
     
     return response.data;
   },
 
   update: async (id: number, cliente: ClienteFormData): Promise<{ message: string }> => {
-    const token = localStorage.getItem('authToken');
-    const response = await axios.put<{ message: string }>(`${API_BASE_URL}/clienti/${id}`, cliente, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await api.put<{ message: string }>(`/clienti/${id}`, cliente);
     
     return response.data;
   },
 
   delete: async (id: number): Promise<void> => {
-    const token = localStorage.getItem('authToken');
-    await axios.delete(`${API_BASE_URL}/clienti/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    await api.delete(`/clienti/${id}`);
   },
 
   deleteCliente: async (id: number): Promise<void> => {
-    const token = localStorage.getItem('authToken');
-    await axios.delete(`${API_BASE_URL}/clienti/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    await api.delete(`/clienti/${id}`);
   },
 
   getStats: async (): Promise<StatsResponse> => {
-    const token = localStorage.getItem('authToken');
-    const response = await axios.get<StatsResponse>(`${API_BASE_URL}/clienti/stats`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await api.get<StatsResponse>(`/clienti/stats`);
     
     return response.data;
   },
@@ -95,9 +72,7 @@ const clientiService = {
     if (filters.sortBy) params.append('sortBy', filters.sortBy);
     if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
     
-    const response = await axios.get(`${API_BASE_URL}/clienti?${params}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await api.get(`/clienti?${params}`);
     
     return response.data;
   },

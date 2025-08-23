@@ -12,7 +12,7 @@ class Database {
         // Configurazione per PostgreSQL con supporto per diversi ambienti
         const config = {
             connectionString: process.env.DATABASE_URL,
-            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+            ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
             max: 20,
             idleTimeoutMillis: 30000,
             connectionTimeoutMillis: 2000,
@@ -133,17 +133,60 @@ class Database {
                 )
             `;
 
+            // Tabella documenti cliente (fatture, scontrini, libretti)
+            const createDocumentiTable = `
+                CREATE TABLE IF NOT EXISTS documenti_cliente (
+                    documentoId SERIAL PRIMARY KEY,
+                    clienteId INTEGER NOT NULL REFERENCES clienti(clienteId) ON DELETE CASCADE,
+                    tipoDocumento VARCHAR(50) NOT NULL CHECK(tipoDocumento IN (
+                        'Fattura', 'Scontrino', 'Libretto', 'Preventivo', 'Contratto', 
+                        'Certificazione', 'Garanzia', 'Altro'
+                    )),
+                    titolo VARCHAR(255) NOT NULL,
+                    descrizione TEXT,
+                    nomeFile VARCHAR(255) NOT NULL,
+                    pathFile TEXT NOT NULL,
+                    dimensioneFile INTEGER,
+                    mimeType VARCHAR(100),
+                    dataCreazione TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    utenteCreazione INTEGER NOT NULL REFERENCES utenti(utenteId)
+                )
+            `;
+
+            // Tabella comunicazioni cliente (WhatsApp, email, chiamate, note)
+            const createComunicazioniTable = `
+                CREATE TABLE IF NOT EXISTS comunicazioni_cliente (
+                    comunicazioneId SERIAL PRIMARY KEY,
+                    clienteId INTEGER NOT NULL REFERENCES clienti(clienteId) ON DELETE CASCADE,
+                    tipoComunicazione VARCHAR(50) NOT NULL CHECK(tipoComunicazione IN (
+                        'Chiamata', 'WhatsApp', 'Email', 'SMS', 'Nota', 'Promemoria', 'Altro'
+                    )),
+                    oggetto VARCHAR(255),
+                    contenuto TEXT NOT NULL,
+                    dataOra TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    statoLettura BOOLEAN DEFAULT FALSE,
+                    priorita VARCHAR(20) DEFAULT 'Media' CHECK(priorita IN ('Bassa', 'Media', 'Alta', 'Urgente')),
+                    utenteCreazione INTEGER NOT NULL REFERENCES utenti(utenteId),
+                    CONSTRAINT unique_comunicazione_utente UNIQUE(comunicazioneId, utenteCreazione)
+                )
+            `;
+
             // Esegui creazione tabelle
             await client.query(createUtentiTable);
             await client.query(createClientiTable);
             await client.query(createPasswordInfoTable);
             await client.query(createLogTable);
+            await client.query(createDocumentiTable);
+            await client.query(createComunicazioniTable);
 
             // Crea indici per performance
             await client.query('CREATE INDEX IF NOT EXISTS idx_clienti_email ON clienti(email)');
             await client.query('CREATE INDEX IF NOT EXISTS idx_utenti_email ON utenti(email)');
             await client.query('CREATE INDEX IF NOT EXISTS idx_log_attivita_utente ON log_attivita(utenteId)');
             await client.query('CREATE INDEX IF NOT EXISTS idx_log_attivita_timestamp ON log_attivita(timestamp)');
+            await client.query('CREATE INDEX IF NOT EXISTS idx_documenti_cliente ON documenti_cliente(clienteId)');
+            await client.query('CREATE INDEX IF NOT EXISTS idx_comunicazioni_cliente ON comunicazioni_cliente(clienteId)');
+            await client.query('CREATE INDEX IF NOT EXISTS idx_comunicazioni_data ON comunicazioni_cliente(dataOra)');
 
             await client.query('COMMIT');
             console.log('✅ Tabelle PostgreSQL create/verificate');

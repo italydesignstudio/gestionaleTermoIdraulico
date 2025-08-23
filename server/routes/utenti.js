@@ -158,8 +158,13 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
     try {
         const users = await db.all(`
             SELECT 
-                utenteId, nome, cognome, email, ruolo, 
-                dataCreazione, ultimoAccesso
+                utenteId as "utenteId", 
+                nome, 
+                cognome, 
+                email, 
+                ruolo, 
+                dataCreazione as "dataCreazione", 
+                ultimoAccesso as "ultimoAccesso"
             FROM utenti 
             ORDER BY cognome, nome
         `);

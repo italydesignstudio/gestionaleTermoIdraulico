@@ -4,6 +4,8 @@ import { Cliente } from '../types';
 import clientiService from '../services/clientiService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
+import DocumentiCliente from '../components/DocumentiCliente';
+import ComunicazioniCliente from '../components/ComunicazioniCliente';
 
 const ClienteDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,9 +23,18 @@ const ClienteDetail: React.FC = () => {
   const loadCliente = async () => {
     if (!id) return;
     
+    // Validate that id is a valid number
+    const clienteId = parseInt(id);
+    if (isNaN(clienteId)) {
+      console.error('ID cliente non valido:', id);
+      toast.error('ID cliente non valido');
+      navigate('/clienti');
+      return;
+    }
+    
     try {
       setLoading(true);
-      const clienteData = await clientiService.getById(parseInt(id));
+      const clienteData = await clientiService.getById(clienteId);
       setCliente(clienteData);
     } catch (error) {
       console.error('Errore nel caricamento del cliente:', error);
@@ -285,6 +296,28 @@ const ClienteDetail: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Sezione Documenti */}
+      <div className="row mt-4">
+        <div className="col-12">
+          <DocumentiCliente 
+            clienteId={cliente.clienteId} 
+            nomeCliente={`${cliente.nome} ${cliente.cognome}`} 
+          />
+        </div>
+      </div>
+
+      {/* Sezione Comunicazioni */}
+      <div className="row mt-4">
+        <div className="col-12">
+          <ComunicazioniCliente 
+            clienteId={cliente.clienteId} 
+            nomeCliente={`${cliente.nome} ${cliente.cognome}`}
+            telefono={cliente.telefono || undefined}
+            email={cliente.email}
+          />
         </div>
       </div>
     </div>

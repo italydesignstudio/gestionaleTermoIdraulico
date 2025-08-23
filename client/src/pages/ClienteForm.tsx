@@ -57,9 +57,18 @@ const ClienteForm: React.FC = () => {
   const loadCliente = async () => {
     if (!id) return;
     
+    // Validate that id is a valid number
+    const clienteId = parseInt(id);
+    if (isNaN(clienteId)) {
+      console.error('ID cliente non valido:', id);
+      toast.error('ID cliente non valido');
+      navigate('/clienti');
+      return;
+    }
+    
     try {
       setLoadingData(true);
-      const cliente = await clientiService.getById(parseInt(id));
+      const cliente = await clientiService.getById(clienteId);
       setFormData({
         nome: cliente.nome,
         cognome: cliente.cognome,
@@ -107,7 +116,13 @@ const ClienteForm: React.FC = () => {
       setLoading(true);
       
       if (isEditing && id) {
-        await clientiService.update(parseInt(id), formData);
+        const clienteId = parseInt(id);
+        if (isNaN(clienteId)) {
+          toast.error('ID cliente non valido');
+          navigate('/clienti');
+          return;
+        }
+        await clientiService.update(clienteId, formData);
         toast.success('Cliente aggiornato con successo');
       } else {
         await clientiService.create(formData);
