@@ -77,14 +77,15 @@ class Database {
                     clienteId SERIAL PRIMARY KEY,
                     nome VARCHAR(255) NOT NULL,
                     cognome VARCHAR(255) NOT NULL,
-                    email VARCHAR(255) UNIQUE NOT NULL,
+                    codiceFiscale VARCHAR(16) UNIQUE,
+                    email VARCHAR(255) UNIQUE,
                     telefono VARCHAR(50) NOT NULL,
                     indirizzo TEXT,
                     citta VARCHAR(255),
                     cap VARCHAR(10),
                     provincia VARCHAR(10),
                     provenienzaContatto VARCHAR(50) CHECK(provenienzaContatto IN (
-                        'Passaparola', 'Google', 'Facebook', 'Instagram', 'Volantino', 
+                        'Passaparola', 'Google', 'Facebook', 'Instagram', 'Volantino',
                         'Giornale', 'Radio', 'TV', 'Sito web', 'Cliente esistente', 'Altro'
                     )) NOT NULL,
                     consensoPrivacy BOOLEAN NOT NULL DEFAULT FALSE,
@@ -174,6 +175,13 @@ class Database {
             // Esegui creazione tabelle
             await client.query(createUtentiTable);
             await client.query(createClientiTable);
+            await client.query("ALTER TABLE clienti ADD COLUMN IF NOT EXISTS codiceFiscale VARCHAR(16);");
+            try {
+                await client.query("ALTER TABLE clienti ADD CONSTRAINT unique_codicefiscale UNIQUE (codiceFiscale);");
+            } catch (e) {
+                // ignore if constraint exists
+            }
+            await client.query("ALTER TABLE clienti ALTER COLUMN email DROP NOT NULL;");
             await client.query(createPasswordInfoTable);
             await client.query(createLogTable);
             await client.query(createDocumentiTable);

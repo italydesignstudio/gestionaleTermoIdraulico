@@ -271,12 +271,14 @@ const ClientiList: React.FC = () => {
                         </td>
                         <td>
                           <div className="small">
-                            <div className="d-flex align-items-center mb-1">
-                              <Mail size={12} className="me-1" />
-                              <a href={`mailto:${cliente.email}`} className="text-decoration-none">
-                                {cliente.email}
-                              </a>
-                            </div>
+                            {cliente.email && (
+                              <div className="d-flex align-items-center mb-1">
+                                <Mail size={12} className="me-1" />
+                                <a href={`mailto:${cliente.email}`} className="text-decoration-none">
+                                  {cliente.email}
+                                </a>
+                              </div>
+                            )}
                             <div className="d-flex align-items-center">
                               <Phone size={12} className="me-1" />
                               <a href={`tel:${cliente.telefono}`} className="text-decoration-none">

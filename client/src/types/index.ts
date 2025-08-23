@@ -12,7 +12,8 @@ export interface Cliente {
   clienteId: number;
   nome: string;
   cognome: string;
-  email: string;
+  codiceFiscale: string;
+  email?: string;
   telefono: string;
   indirizzo?: string;
   citta?: string;
@@ -138,7 +139,8 @@ export interface StatsResponse {
 export interface ClienteFormData {
   nome: string;
   cognome: string;
-  email: string;
+  codiceFiscale: string;
+  email?: string;
   telefono: string;
   indirizzo?: string;
   citta?: string;

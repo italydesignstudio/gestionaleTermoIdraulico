@@ -12,6 +12,7 @@ const ClienteForm: React.FC = () => {
   const [formData, setFormData] = useState<ClienteFormData>({
     nome: '',
     cognome: '',
+    codiceFiscale: '',
     email: '',
     telefono: '',
     indirizzo: '',
@@ -77,6 +78,7 @@ const ClienteForm: React.FC = () => {
       setFormData({
         nome: cliente.nome || '',
         cognome: cliente.cognome || '',
+        codiceFiscale: (cliente as any).codiceFiscale || (cliente as any).codicefiscale || '',
         email: cliente.email || '',
         telefono: cliente.telefono || '',
         indirizzo: cliente.indirizzo || '',
@@ -222,8 +224,24 @@ const ClienteForm: React.FC = () => {
                   </div>
 
                   <div className="col-md-6 mb-3">
+                    <label htmlFor="codiceFiscale" className="form-label">
+                      Codice Fiscale <span className="text-danger">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="codiceFiscale"
+                      name="codiceFiscale"
+                      className="form-control"
+                      value={formData.codiceFiscale}
+                      onChange={handleInputChange}
+                      required
+                      maxLength={16}
+                    />
+                  </div>
+
+                  <div className="col-md-6 mb-3">
                     <label htmlFor="email" className="form-label">
-                      Email <span className="text-danger">*</span>
+                      Email
                     </label>
                     <input
                       type="email"
@@ -232,7 +250,6 @@ const ClienteForm: React.FC = () => {
                       className="form-control"
                       value={formData.email}
                       onChange={handleInputChange}
-                      required
                       maxLength={255}
                     />
                   </div>
@@ -246,6 +263,7 @@ const ClienteForm: React.FC = () => {
                       className="form-control"
                       value={formData.telefono}
                       onChange={handleInputChange}
+                      required
                       maxLength={20}
                       placeholder="+39 123 456 7890"
                     />
