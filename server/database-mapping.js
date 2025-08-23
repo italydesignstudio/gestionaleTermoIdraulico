@@ -20,6 +20,7 @@ const DB_MAPPING = {
         id: 'clienteid',
         nome: 'nome',
         cognome: 'cognome',
+        codiceFiscale: 'codicefiscale',
         email: 'email',
         telefono: 'telefono',
         indirizzo: 'indirizzo',

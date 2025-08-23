@@ -19,7 +19,7 @@ router.get('/', authenticateToken, requireOperatorOrAdmin, async (req, res) => {
         } = req.query;
 
         // Validazione parametri di ordinamento
-        const validSortColumns = ['nome', 'cognome', 'email', 'telefono', 'citta', 'dataCreazione', 'provenienzaContatto'];
+        const validSortColumns = ['nome', 'cognome', 'codiceFiscale', 'email', 'telefono', 'citta', 'dataCreazione', 'provenienzaContatto'];
         const validSortOrders = ['ASC', 'DESC'];
         
         const finalSortBy = validSortColumns.includes(sortBy) ? sortBy : 'cognome';
@@ -29,16 +29,17 @@ router.get('/', authenticateToken, requireOperatorOrAdmin, async (req, res) => {
         let whereConditions = [];
         let params = [];
 
-        // Ricerca per nome, cognome, email o telefono
+        // Ricerca per nome, cognome, codice fiscale, email o telefono
         if (search) {
             whereConditions.push(`(
-                nome ILIKE $${params.length + 1} OR 
-                cognome ILIKE $${params.length + 2} OR 
-                email ILIKE $${params.length + 3} OR 
-                telefono ILIKE $${params.length + 4}
+                nome ILIKE $${params.length + 1} OR
+                cognome ILIKE $${params.length + 2} OR
+                codiceFiscale ILIKE $${params.length + 3} OR
+                email ILIKE $${params.length + 4} OR
+                telefono ILIKE $${params.length + 5}
             )`);
             const searchPattern = `%${search}%`;
-            params.push(searchPattern, searchPattern, searchPattern, searchPattern);
+            params.push(searchPattern, searchPattern, searchPattern, searchPattern, searchPattern);
         }
 
         // Filtro per provenienza contatto
@@ -63,12 +64,12 @@ router.get('/', authenticateToken, requireOperatorOrAdmin, async (req, res) => {
         // Query per dati paginati
         const offset = (page - 1) * limit;
         const dataSql = `
-            SELECT 
-                clienteId, nome, cognome, email, telefono, 
+            SELECT
+                clienteId, nome, cognome, codiceFiscale AS "codiceFiscale", email, telefono,
                 indirizzo, citta, cap, provincia, provenienzaContatto,
                 consensoPrivacy, consensoMarketing, note,
                 dataCreazione, dataModifica
-            FROM clienti 
+            FROM clienti
             ${whereClause}
             ORDER BY ${finalSortBy} ${finalSortOrder}
             LIMIT $${params.length + 1} OFFSET $${params.length + 2}
@@ -176,8 +177,25 @@ router.get('/:id', authenticateToken, requireOperatorOrAdmin, async (req, res) =
         const { id } = req.params;
 
         const cliente = await db.get(`
-            SELECT 
-                c.*,
+            SELECT
+                c.clienteId,
+                c.nome,
+                c.cognome,
+                c.codiceFiscale AS "codiceFiscale",
+                c.email,
+                c.telefono,
+                c.indirizzo,
+                c.citta,
+                c.cap,
+                c.provincia,
+                c.provenienzaContatto,
+                c.consensoPrivacy,
+                c.consensoMarketing,
+                c.note,
+                c.dataCreazione,
+                c.dataModifica,
+                c.utenteCreazione,
+                c.utenteModifica,
                 uc.nome as nomeUtenteCreazione,
                 uc.cognome as cognomeUtenteCreazione,
                 um.nome as nomeUtenteModifica,
@@ -212,17 +230,28 @@ router.get('/:id', authenticateToken, requireOperatorOrAdmin, async (req, res) =
 router.post('/', authenticateToken, requireOperatorOrAdmin, validateClient, handleValidationErrors, async (req, res) => {
     try {
         const {
-            nome, cognome, email, telefono, indirizzo, citta, cap, provincia,
+            nome, cognome, codiceFiscale, email, telefono, indirizzo, citta, cap, provincia,
             provenienzaContatto, consensoPrivacy, consensoMarketing = false, note
         } = req.body;
 
-        // Verifica se email già esistente
-        const existingClient = await db.get('SELECT email FROM clienti WHERE email = $1', [email]);
-        if (existingClient) {
+        // Verifica codice fiscale esistente
+        const existingCf = await db.get('SELECT codiceFiscale FROM clienti WHERE codiceFiscale = $1', [codiceFiscale]);
+        if (existingCf) {
             return res.status(400).json({
-                error: 'Email già registrata per un altro cliente',
-                code: 'EMAIL_EXISTS'
+                error: 'Codice fiscale già registrato per un altro cliente',
+                code: 'CODICEFISCALE_EXISTS'
             });
+        }
+
+        // Verifica se email già esistente
+        if (email) {
+            const existingClient = await db.get('SELECT email FROM clienti WHERE email = $1', [email]);
+            if (existingClient) {
+                return res.status(400).json({
+                    error: 'Email già registrata per un altro cliente',
+                    code: 'EMAIL_EXISTS'
+                });
+            }
         }
 
         // Normalizza telefono
@@ -231,13 +260,13 @@ router.post('/', authenticateToken, requireOperatorOrAdmin, validateClient, hand
         // Inserisci nuovo cliente
         const result = await db.query(`
             INSERT INTO clienti (
-                nome, cognome, email, telefono, indirizzo, citta, cap, provincia,
+                nome, cognome, codiceFiscale, email, telefono, indirizzo, citta, cap, provincia,
                 provenienzaContatto, consensoPrivacy, consensoMarketing, note,
                 utenteCreazione, utenteModifica
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
             RETURNING clienteId
         `, [
-            nome, cognome, email, telefonoNormalizzato, indirizzo, citta, cap, provincia,
+            nome, cognome, codiceFiscale, email, telefonoNormalizzato, indirizzo, citta, cap, provincia,
             provenienzaContatto, consensoPrivacy, consensoMarketing, note,
             req.user.utenteId, req.user.utenteId
         ]);
@@ -252,7 +281,7 @@ router.post('/', authenticateToken, requireOperatorOrAdmin, validateClient, hand
             clienteId,
             cliente: {
                 clienteId,
-                nome, cognome, email, telefono: telefonoNormalizzato,
+                nome, cognome, codiceFiscale, email, telefono: telefonoNormalizzato,
                 indirizzo, citta, cap, provincia,
                 provenienzaContatto, consensoPrivacy, consensoMarketing, note
             }
@@ -272,12 +301,12 @@ router.put('/:id', authenticateToken, requireOperatorOrAdmin, validateClient, ha
     try {
         const { id } = req.params;
         const {
-            nome, cognome, email, telefono, indirizzo, citta, cap, provincia,
+            nome, cognome, codiceFiscale, email, telefono, indirizzo, citta, cap, provincia,
             provenienzaContatto, consensoPrivacy, consensoMarketing = false, note
         } = req.body;
 
         // Verifica se cliente esiste
-        const existingClient = await db.get('SELECT clienteId, email FROM clienti WHERE clienteId = $1', [id]);
+        const existingClient = await db.get('SELECT clienteId, email, codiceFiscale FROM clienti WHERE clienteId = $1', [id]);
         if (!existingClient) {
             return res.status(404).json({
                 error: 'Cliente non trovato',
@@ -285,16 +314,30 @@ router.put('/:id', authenticateToken, requireOperatorOrAdmin, validateClient, ha
             });
         }
 
-        // Verifica se email già usata da altro cliente
-        const emailClient = await db.get(
-            'SELECT clienteId FROM clienti WHERE email = $1 AND clienteId != $2', 
-            [email, id]
+        // Verifica se codice fiscale già usato da altro cliente
+        const cfClient = await db.get(
+            'SELECT clienteId FROM clienti WHERE codiceFiscale = $1 AND clienteId != $2',
+            [codiceFiscale, id]
         );
-        if (emailClient) {
+        if (cfClient) {
             return res.status(400).json({
-                error: 'Email già registrata per un altro cliente',
-                code: 'EMAIL_EXISTS'
+                error: 'Codice fiscale già registrato per un altro cliente',
+                code: 'CODICEFISCALE_EXISTS'
             });
+        }
+
+        // Verifica se email già usata da altro cliente
+        if (email) {
+            const emailClient = await db.get(
+                'SELECT clienteId FROM clienti WHERE email = $1 AND clienteId != $2',
+                [email, id]
+            );
+            if (emailClient) {
+                return res.status(400).json({
+                    error: 'Email già registrata per un altro cliente',
+                    code: 'EMAIL_EXISTS'
+                });
+            }
         }
 
         // Normalizza telefono
@@ -302,14 +345,14 @@ router.put('/:id', authenticateToken, requireOperatorOrAdmin, validateClient, ha
 
         // Aggiorna cliente
         const result = await db.query(`
-            UPDATE clienti SET 
-                nome = $1, cognome = $2, email = $3, telefono = $4, 
-                indirizzo = $5, citta = $6, cap = $7, provincia = $8,
-                provenienzaContatto = $9, consensoPrivacy = $10, consensoMarketing = $11,
-                note = $12, dataModifica = NOW(), utenteModifica = $13
-            WHERE clienteId = $14
+            UPDATE clienti SET
+                nome = $1, cognome = $2, codiceFiscale = $3, email = $4, telefono = $5,
+                indirizzo = $6, citta = $7, cap = $8, provincia = $9,
+                provenienzaContatto = $10, consensoPrivacy = $11, consensoMarketing = $12,
+                note = $13, dataModifica = NOW(), utenteModifica = $14
+            WHERE clienteId = $15
         `, [
-            nome, cognome, email, telefonoNormalizzato, indirizzo, citta, cap, provincia,
+            nome, cognome, codiceFiscale, email, telefonoNormalizzato, indirizzo, citta, cap, provincia,
             provenienzaContatto, consensoPrivacy, consensoMarketing, note,
             req.user.utenteId, id
         ]);
@@ -328,7 +371,7 @@ router.put('/:id', authenticateToken, requireOperatorOrAdmin, validateClient, ha
             message: 'Cliente aggiornato con successo',
             cliente: {
                 clienteId: parseInt(id),
-                nome, cognome, email, telefono: telefonoNormalizzato,
+                nome, cognome, codiceFiscale, email, telefono: telefonoNormalizzato,
                 indirizzo, citta, cap, provincia,
                 provenienzaContatto, consensoPrivacy, consensoMarketing, note
             }

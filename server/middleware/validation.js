@@ -57,7 +57,7 @@ const validateClient = [
         .withMessage('Nome deve essere tra 2 e 50 caratteri')
         .matches(/^[a-zA-ZÀ-ÿ\s']+$/)
         .withMessage('Nome può contenere solo lettere, spazi e apostrofi'),
-    
+
     body('cognome')
         .notEmpty()
         .withMessage('Cognome è obbligatorio')
@@ -65,8 +65,15 @@ const validateClient = [
         .withMessage('Cognome deve essere tra 2 e 50 caratteri')
         .matches(/^[a-zA-ZÀ-ÿ\s']+$/)
         .withMessage('Cognome può contenere solo lettere, spazi e apostrofi'),
-    
+
+    body('codiceFiscale')
+        .notEmpty()
+        .withMessage('Codice fiscale è obbligatorio')
+        .matches(/^[A-Z0-9]{16}$/i)
+        .withMessage('Codice fiscale deve essere di 16 caratteri alfanumerici'),
+
     body('email')
+        .optional({ checkFalsy: true })
         .isEmail()
         .withMessage('Email non valida')
         .normalizeEmail()

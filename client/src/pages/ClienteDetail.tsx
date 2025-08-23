@@ -147,11 +147,20 @@ const ClienteDetail: React.FC = () => {
                 </div>
 
                 <div className="col-md-6 mb-3">
+                  <label className="form-label fw-bold">Codice Fiscale</label>
+                  <p className="form-control-plaintext">{(cliente as any).codiceFiscale || (cliente as any).codicefiscale}</p>
+                </div>
+
+                <div className="col-md-6 mb-3">
                   <label className="form-label fw-bold">Email</label>
                   <p className="form-control-plaintext">
-                    <a href={`mailto:${cliente.email}`} className="text-decoration-none">
-                      {cliente.email}
-                    </a>
+                    {cliente.email ? (
+                      <a href={`mailto:${cliente.email}`} className="text-decoration-none">
+                        {cliente.email}
+                      </a>
+                    ) : (
+                      <span className="text-muted">Non specificata</span>
+                    )}
                   </p>
                 </div>
 

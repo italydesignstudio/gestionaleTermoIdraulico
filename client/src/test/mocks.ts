@@ -6,6 +6,7 @@ export const mockCliente: Cliente = {
   clienteId: 1,
   nome: 'Mario',
   cognome: 'Rossi',
+  codiceFiscale: 'RSSMRA80A01H501U',
   email: 'mario.rossi@example.com',
   telefono: '+39 123 456 789',
   indirizzo: 'Via Roma 123',
@@ -31,6 +32,7 @@ export const mockClienteLista: Cliente[] = [
     clienteId: 2,
     nome: 'Lucia',
     cognome: 'Bianchi',
+    codiceFiscale: 'BNCLCU80A01H501U',
     email: 'lucia.bianchi@example.com',
     provenienzaContatto: 'Facebook',
   },
@@ -39,6 +41,7 @@ export const mockClienteLista: Cliente[] = [
     clienteId: 3,
     nome: 'Giuseppe',
     cognome: 'Verdi',
+    codiceFiscale: 'VRDGPP80A01H501U',
     email: 'giuseppe.verdi@example.com',
     provenienzaContatto: 'Passaparola',
   }
