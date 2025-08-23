@@ -1,6 +1,5 @@
 import { render, RenderOptions } from '@testing-library/react'
 import { ReactElement } from 'react'
-import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { AuthProvider } from '../contexts/AuthContext'
 import { ToastContainer } from 'react-toastify'
@@ -34,7 +33,7 @@ Object.defineProperty(window, 'localStorage', {
   value: localStorageMock
 })
 
-// Provider personalizzato per i test
+// Provider personalizzato per i test (senza Router)
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -46,12 +45,10 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          {children}
-          <ToastContainer />
-        </AuthProvider>
-      </BrowserRouter>
+      <AuthProvider>
+        {children}
+        <ToastContainer />
+      </AuthProvider>
     </QueryClientProvider>
   )
 }
@@ -78,6 +75,14 @@ export const mockApiResponse = (data: any, status = 200) => ({
 export const waitForElementToBeRemoved = async (element: HTMLElement) => {
   return new Promise<void>((resolve) => {
     const observer = new MutationObserver(() => {
+      if (!document.contains(element)) {
+        observer.disconnect()
+        resolve()
+      }
+    })
+    observer.observe(document.body, { childList: true, subtree: true })
+  })
+}
       if (!document.contains(element)) {
         observer.disconnect()
         resolve()

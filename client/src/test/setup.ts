@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 
+// Rendi vi globale per tutti i test
+;(globalThis as any).vi = vi
+
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -17,7 +20,7 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock ResizeObserver
-(global as any).ResizeObserver = vi.fn().mockImplementation(() => ({
+;(globalThis as any).ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
