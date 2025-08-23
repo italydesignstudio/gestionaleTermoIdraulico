@@ -15,9 +15,9 @@ Sistema di gestione anagrafiche clienti per un'azienda termoidraulica con autent
 - ✅ Logging delle modifiche
 
 ## Architettura
-- **Backend**: Node.js + Express + SQLite
+- **Backend**: Node.js + Express
 - **Frontend**: React + TypeScript + Vite
-- **Database**: SQLite con encryption per dati sensibili
+- **Database**: SQLite (dev) / PostgreSQL (prod su Render) con encryption per dati sensibili
 - **Autenticazione**: JWT + bcrypt
 
 ## Struttura del progetto
@@ -98,7 +98,7 @@ npm run build
 - 10+ clienti fittizi
 
 ## Note tecniche
-- Database SQLite per facilità deployment
+- Database SQLite per sviluppo locale, PostgreSQL in produzione su Render
 - Crittografia lato server per dati sensibili
 - Logging completo delle operazioni
 - UI responsive con Bootstrap
@@ -106,24 +106,12 @@ npm run build
 
 ## 🚀 Deployment
 
-### Quick Deploy (Recommended)
-1. **Read the deployment guide**: [DEPLOY_NOW.md](./DEPLOY_NOW.md)
-2. **Install deployment tools**:
-   ```bash
-   ./setup-tools.sh
-   ```
-3. **Auto-deploy**:
-   ```bash
-   ./deploy.sh
-   ```
+L'applicazione è pensata per essere distribuita interamente su [Render](https://render.com).
+La guida completa passo-passo è disponibile in [RENDER_DEPLOYMENT.md](./RENDER_DEPLOYMENT.md).
 
-### Manual Deploy
-- **Backend**: Railway.app (PostgreSQL + Node.js)
-- **Frontend**: Vercel.com (React + Vite)
+In sintesi:
+- crea un database PostgreSQL;
+- deploya il backend come **Web Service** (root `server`);
+- deploya il frontend come **Static Site** (root `client` e `VITE_API_BASE_URL` impostata sull'API).
 
-See [DEPLOY_NOW.md](./DEPLOY_NOW.md) for detailed instructions.
-
-### Production URLs
-- Frontend: `https://your-app.vercel.app`
-- Backend API: `https://your-app.railway.app/api`
-- Health Check: `https://your-app.railway.app/api/health`
+Consulta la guida per i dettagli su variabili d'ambiente, CORS e test post-deploy.
