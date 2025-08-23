@@ -145,15 +145,7 @@ const Login: React.FC = () => {
                 </Form>
 
                 {/* Info account demo */}
-                <Card className="bg-light border-0 mt-4">
-                  <Card.Body className="p-3">
-                    <h6 className="mb-2">Account di prova:</h6>
-                    <div className="small text-muted">
-                      <div><strong>Admin:</strong> admin@termoidraulico.it / password123</div>
-                      <div><strong>Operatore:</strong> operatore@termoidraulico.it / password123</div>
-                    </div>
-                  </Card.Body>
-                </Card>
+
               </Card.Body>
             </Card>
           </Col>

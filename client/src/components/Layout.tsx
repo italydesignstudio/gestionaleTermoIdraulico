@@ -27,8 +27,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const sidebarItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home, color: 'primary' },
     { path: '/clienti', label: 'Clienti', icon: Users, color: 'info' },
+    // Mostra Password e Info per Operatori e Amministratori
+    ...(user && ['Operatore', 'Amministratore'].includes(user.ruolo) ? [
+      { path: '/password-info', label: 'Password e Info', icon: Shield, color: 'warning' }
+    ] : []),
+    // Mostra Gestione Utenti solo per Amministratori
     ...(isAdmin() ? [
-      { path: '/password-info', label: 'Password e Info', icon: Shield, color: 'warning' },
       { path: '/utenti', label: 'Gestione Utenti', icon: Settings, color: 'secondary' }
     ] : [])
   ];

@@ -5,9 +5,14 @@ import { Alert } from 'react-bootstrap';
 interface ProtectedRouteProps {
   children: ReactNode;
   requireAdmin?: boolean;
+  requireOperatorOrAdmin?: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin = false }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+  children, 
+  requireAdmin = false,
+  requireOperatorOrAdmin = false 
+}) => {
   const { user, isAdmin } = useAuth();
 
   if (!user) {
@@ -25,6 +30,18 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
         <Alert.Heading>Accesso riservato</Alert.Heading>
         <p>
           Questa sezione è riservata agli amministratori. 
+          Il tuo ruolo attuale è: <strong>{user.ruolo}</strong>
+        </p>
+      </Alert>
+    );
+  }
+
+  if (requireOperatorOrAdmin && !['Operatore', 'Amministratore'].includes(user.ruolo)) {
+    return (
+      <Alert variant="warning" className="alert-custom">
+        <Alert.Heading>Accesso riservato</Alert.Heading>
+        <p>
+          Questa sezione è riservata agli operatori e amministratori. 
           Il tuo ruolo attuale è: <strong>{user.ruolo}</strong>
         </p>
       </Alert>

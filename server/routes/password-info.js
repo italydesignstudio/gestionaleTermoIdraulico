@@ -1,12 +1,12 @@
 const express = require('express');
 const db = require('../database-pg');
 const { validatePasswordInfo, handleValidationErrors } = require('../middleware/validation');
-const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const { authenticateToken, requireAdmin, requireOperatorOrAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// GET /api/password-info - Lista dati sensibili (solo admin)
-router.get('/', authenticateToken, requireAdmin, async (req, res) => {
+// GET /api/password-info - Lista dati sensibili (operatori e admin)
+router.get('/', authenticateToken, requireOperatorOrAdmin, async (req, res) => {
     try {
         const { search = '', page = 1, limit = 1000 } = req.query;
 
@@ -73,7 +73,7 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // GET /api/password-info/stats - Statistiche per categoria
-router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/stats', authenticateToken, requireOperatorOrAdmin, async (req, res) => {
     try {
         // Conteggio per categoria
         const categoriaStats = await db.all(`
@@ -100,8 +100,8 @@ router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
     }
 });
 
-// GET /api/password-info/:id - Dettaglio con password decifrata (solo admin)
-router.get('/:id', authenticateToken, requireAdmin, async (req, res) => {
+// GET /api/password-info/:id - Dettaglio con password decifrata (operatori e admin)
+router.get('/:id', authenticateToken, requireOperatorOrAdmin, async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -152,8 +152,8 @@ router.get('/:id', authenticateToken, requireAdmin, async (req, res) => {
     }
 });
 
-// POST /api/password-info - Nuovo record dati sensibili (solo admin)
-router.post('/', authenticateToken, requireAdmin, validatePasswordInfo, handleValidationErrors, async (req, res) => {
+// POST /api/password-info - Nuovo record dati sensibili (operatori e admin)
+router.post('/', authenticateToken, requireOperatorOrAdmin, validatePasswordInfo, handleValidationErrors, async (req, res) => {
     try {
         const {
             titolo, categoria, url, username, email, password, codici, descrizione, note
@@ -199,8 +199,8 @@ router.post('/', authenticateToken, requireAdmin, validatePasswordInfo, handleVa
     }
 });
 
-// PUT /api/password-info/:id - Modifica dati sensibili (solo admin)
-router.put('/:id', authenticateToken, requireAdmin, validatePasswordInfo, handleValidationErrors, async (req, res) => {
+// PUT /api/password-info/:id - Modifica dati sensibili (operatori e admin)
+router.put('/:id', authenticateToken, requireOperatorOrAdmin, validatePasswordInfo, handleValidationErrors, async (req, res) => {
     try {
         const { id } = req.params;
         const {
@@ -260,8 +260,8 @@ router.put('/:id', authenticateToken, requireAdmin, validatePasswordInfo, handle
     }
 });
 
-// DELETE /api/password-info/:id - Elimina dati sensibili (solo admin)
-router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
+// DELETE /api/password-info/:id - Elimina dati sensibili (operatori e admin)
+router.delete('/:id', authenticateToken, requireOperatorOrAdmin, async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -294,6 +294,52 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
 
     } catch (error) {
         console.error('Errore eliminazione password info:', error);
+        res.status(500).json({
+            error: 'Errore interno del server',
+            code: 'INTERNAL_ERROR'
+        });
+    }
+});
+
+// PUT /api/password-info/:id/reveal - Rivela password (operatori e admin)
+router.put('/:id/reveal', authenticateToken, requireOperatorOrAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const passwordInfo = await db.get(`
+            SELECT infoId, titolo, passwordCifrata
+            FROM password_info 
+            WHERE infoId = $1
+        `, [id]);
+
+        if (!passwordInfo) {
+            return res.status(404).json({
+                error: 'Informazione non trovata',
+                code: 'PASSWORD_INFO_NOT_FOUND'
+            });
+        }
+
+        // Decifra la password
+        let passwordDecifrata;
+        try {
+            passwordDecifrata = db.decrypt(passwordInfo.passwordcifrata);
+        } catch (error) {
+            console.error('Errore decifratura password:', error);
+            return res.status(500).json({
+                error: 'Errore nella decifratura della password',
+                code: 'DECRYPTION_ERROR'
+            });
+        }
+
+        // Log dell'accesso per sicurezza
+        db.logActivity(req.user.utenteId, 'REVEAL', 'password_info', id, `Password rivelata per: ${passwordInfo.titolo}`);
+
+        res.json({
+            password: passwordDecifrata
+        });
+
+    } catch (error) {
+        console.error('Errore reveal password:', error);
         res.status(500).json({
             error: 'Errore interno del server',
             code: 'INTERNAL_ERROR'

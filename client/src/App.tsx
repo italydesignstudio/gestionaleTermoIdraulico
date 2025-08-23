@@ -49,11 +49,11 @@ const App: React.FC = () => {
         <Route path="/clienti/:id" element={<ClienteDetail />} />
         <Route path="/clienti/:id/modifica" element={<ClienteForm />} />
         
-        {/* Routes admin */}
+        {/* Routes operatori e admin */}
         <Route 
           path="/password-info" 
           element={
-            <ProtectedRoute requireAdmin>
+            <ProtectedRoute requireOperatorOrAdmin>
               <PasswordInfo />
             </ProtectedRoute>
           } 
