@@ -3,6 +3,7 @@ import { ReactElement } from 'react'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { AuthProvider } from '../contexts/AuthContext'
 import { ToastContainer } from 'react-toastify'
+import { vi } from 'vitest'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
 // Mock dell'utente autenticato
@@ -75,14 +76,6 @@ export const mockApiResponse = (data: any, status = 200) => ({
 export const waitForElementToBeRemoved = async (element: HTMLElement) => {
   return new Promise<void>((resolve) => {
     const observer = new MutationObserver(() => {
-      if (!document.contains(element)) {
-        observer.disconnect()
-        resolve()
-      }
-    })
-    observer.observe(document.body, { childList: true, subtree: true })
-  })
-}
       if (!document.contains(element)) {
         observer.disconnect()
         resolve()

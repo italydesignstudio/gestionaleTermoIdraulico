@@ -29,13 +29,16 @@ const ClienteForm: React.FC = () => {
   const [loadingData, setLoadingData] = useState(isEditing);
 
   const provenienzaOptions = [
+    'Passaparola',
     'Google',
     'Facebook',
+    'Instagram',
+    'Volantino',
+    'Giornale',
+    'Radio',
+    'TV',
     'Sito web',
-    'Passaparola',
-    'Volantinaggio',
-    'Radio/TV',
-    'Fiera',
+    'Cliente esistente',
     'Altro'
   ];
 
@@ -225,7 +228,7 @@ const ClienteForm: React.FC = () => {
 
                   <div className="col-md-6 mb-3">
                     <label htmlFor="codiceFiscale" className="form-label">
-                      Codice Fiscale <span className="text-danger">*</span>
+                      Codice Fiscale
                     </label>
                     <input
                       type="text"
@@ -234,8 +237,8 @@ const ClienteForm: React.FC = () => {
                       className="form-control"
                       value={formData.codiceFiscale}
                       onChange={handleInputChange}
-                      required
                       maxLength={16}
+                      placeholder="RSSMRA80A01H501U (opzionale)"
                     />
                   </div>
 

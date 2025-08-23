@@ -46,14 +46,23 @@ class Database {
             await this.createTables();
         } catch (err) {
             console.error('❌ Errore connessione database:', err);
-            throw err;
+            // Non lanciare l'errore per permettere al server di continuare
+            console.log('⚠️  Server continuerà senza inizializzazione database');
         }
     }
 
     async createTables() {
-        const client = await this.pool.connect();
-        
+        let client;
         try {
+            client = await this.pool.connect();
+            
+            // Reset della connessione in caso di transazioni aborrite
+            try {
+                await client.query('ROLLBACK');
+            } catch (e) {
+                // Ignora errori del rollback
+            }
+
             // Inizia transazione
             await client.query('BEGIN');
 

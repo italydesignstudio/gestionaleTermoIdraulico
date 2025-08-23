@@ -67,7 +67,7 @@ router.get('/', authenticateToken, requireOperatorOrAdmin, async (req, res) => {
             SELECT
                 clienteId, nome, cognome, codiceFiscale AS "codiceFiscale", email, telefono,
                 indirizzo, citta, cap, provincia, provenienzaContatto,
-                consensoPrivacy, consensoMarketing, note,
+                consensoPrivacy AS "consensoPrivacy", consensoMarketing AS "consensoMarketing", note,
                 dataCreazione, dataModifica
             FROM clienti
             ${whereClause}
@@ -189,8 +189,8 @@ router.get('/:id', authenticateToken, requireOperatorOrAdmin, async (req, res) =
                 c.cap,
                 c.provincia,
                 c.provenienzaContatto,
-                c.consensoPrivacy,
-                c.consensoMarketing,
+                c.consensoPrivacy AS "consensoPrivacy",
+                c.consensoMarketing AS "consensoMarketing",
                 c.note,
                 c.dataCreazione,
                 c.dataModifica,
@@ -229,23 +229,31 @@ router.get('/:id', authenticateToken, requireOperatorOrAdmin, async (req, res) =
 // POST /api/clienti - Nuovo cliente
 router.post('/', authenticateToken, requireOperatorOrAdmin, validateClient, handleValidationErrors, async (req, res) => {
     try {
+        console.log('Dati ricevuti per nuovo cliente:', JSON.stringify(req.body, null, 2));
+        
         const {
             nome, cognome, codiceFiscale, email, telefono, indirizzo, citta, cap, provincia,
             provenienzaContatto, consensoPrivacy, consensoMarketing = false, note
         } = req.body;
 
-        // Verifica codice fiscale esistente
-        const existingCf = await db.get('SELECT codiceFiscale FROM clienti WHERE codiceFiscale = $1', [codiceFiscale]);
-        if (existingCf) {
-            return res.status(400).json({
-                error: 'Codice fiscale già registrato per un altro cliente',
-                code: 'CODICEFISCALE_EXISTS'
-            });
+        // Converte stringhe vuote in NULL per controlli
+        const codiceFiscaleNormalizzato = codiceFiscale && codiceFiscale.trim() !== '' ? codiceFiscale : null;
+        const emailNormalizzata = email && email.trim() !== '' ? email : null;
+
+        // Verifica codice fiscale esistente (solo se fornito)
+        if (codiceFiscaleNormalizzato) {
+            const existingCf = await db.get('SELECT codiceFiscale FROM clienti WHERE codiceFiscale = $1', [codiceFiscaleNormalizzato]);
+            if (existingCf) {
+                return res.status(400).json({
+                    error: 'Codice fiscale già registrato per un altro cliente',
+                    code: 'CODICEFISCALE_EXISTS'
+                });
+            }
         }
 
         // Verifica se email già esistente
-        if (email) {
-            const existingClient = await db.get('SELECT email FROM clienti WHERE email = $1', [email]);
+        if (emailNormalizzata) {
+            const existingClient = await db.get('SELECT email FROM clienti WHERE email = $1', [emailNormalizzata]);
             if (existingClient) {
                 return res.status(400).json({
                     error: 'Email già registrata per un altro cliente',
@@ -257,6 +265,10 @@ router.post('/', authenticateToken, requireOperatorOrAdmin, validateClient, hand
         // Normalizza telefono
         const telefonoNormalizzato = telefono.startsWith('+39') ? telefono : `+39 ${telefono}`;
 
+        // Converte stringhe vuote in NULL per campi opzionali
+        const capNormalizzato = cap && cap.trim() !== '' ? cap : null;
+        const provinciaNormalizzata = provincia && provincia.trim() !== '' ? provincia : null;
+
         // Inserisci nuovo cliente
         const result = await db.query(`
             INSERT INTO clienti (
@@ -266,7 +278,7 @@ router.post('/', authenticateToken, requireOperatorOrAdmin, validateClient, hand
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
             RETURNING clienteId
         `, [
-            nome, cognome, codiceFiscale, email, telefonoNormalizzato, indirizzo, citta, cap, provincia,
+            nome, cognome, codiceFiscaleNormalizzato, emailNormalizzata, telefonoNormalizzato, indirizzo, citta, capNormalizzato, provinciaNormalizzata,
             provenienzaContatto, consensoPrivacy, consensoMarketing, note,
             req.user.utenteId, req.user.utenteId
         ]);
@@ -314,16 +326,22 @@ router.put('/:id', authenticateToken, requireOperatorOrAdmin, validateClient, ha
             });
         }
 
-        // Verifica se codice fiscale già usato da altro cliente
-        const cfClient = await db.get(
-            'SELECT clienteId FROM clienti WHERE codiceFiscale = $1 AND clienteId != $2',
-            [codiceFiscale, id]
-        );
-        if (cfClient) {
-            return res.status(400).json({
-                error: 'Codice fiscale già registrato per un altro cliente',
-                code: 'CODICEFISCALE_EXISTS'
-            });
+        // Converte stringhe vuote in NULL per controlli
+        const codiceFiscaleNormalizzato = codiceFiscale && codiceFiscale.trim() !== '' ? codiceFiscale : null;
+        const emailNormalizzata = email && email.trim() !== '' ? email : null;
+
+        // Verifica se codice fiscale già usato da altro cliente (solo se fornito)
+        if (codiceFiscaleNormalizzato) {
+            const cfClient = await db.get(
+                'SELECT clienteId FROM clienti WHERE codiceFiscale = $1 AND clienteId != $2',
+                [codiceFiscaleNormalizzato, id]
+            );
+            if (cfClient) {
+                return res.status(400).json({
+                    error: 'Codice fiscale già registrato per un altro cliente',
+                    code: 'CODICEFISCALE_EXISTS'
+                });
+            }
         }
 
         // Verifica se email già usata da altro cliente
@@ -343,6 +361,10 @@ router.put('/:id', authenticateToken, requireOperatorOrAdmin, validateClient, ha
         // Normalizza telefono
         const telefonoNormalizzato = telefono.startsWith('+39') ? telefono : `+39 ${telefono}`;
 
+        // Converte stringhe vuote in NULL per campi opzionali (riutilizza le variabili già dichiarate)
+        const capNormalizzato = cap && cap.trim() !== '' ? cap : null;
+        const provinciaNormalizzata = provincia && provincia.trim() !== '' ? provincia : null;
+
         // Aggiorna cliente
         const result = await db.query(`
             UPDATE clienti SET
@@ -352,7 +374,7 @@ router.put('/:id', authenticateToken, requireOperatorOrAdmin, validateClient, ha
                 note = $13, dataModifica = NOW(), utenteModifica = $14
             WHERE clienteId = $15
         `, [
-            nome, cognome, codiceFiscale, email, telefonoNormalizzato, indirizzo, citta, cap, provincia,
+            nome, cognome, codiceFiscaleNormalizzato, emailNormalizzata, telefonoNormalizzato, indirizzo, citta, capNormalizzato, provinciaNormalizzata,
             provenienzaContatto, consensoPrivacy, consensoMarketing, note,
             req.user.utenteId, id
         ]);

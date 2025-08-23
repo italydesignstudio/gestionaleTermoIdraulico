@@ -67,8 +67,7 @@ const validateClient = [
         .withMessage('Cognome può contenere solo lettere, spazi e apostrofi'),
 
     body('codiceFiscale')
-        .notEmpty()
-        .withMessage('Codice fiscale è obbligatorio')
+        .optional({ checkFalsy: true })
         .matches(/^[A-Z0-9]{16}$/i)
         .withMessage('Codice fiscale deve essere di 16 caratteri alfanumerici'),
 
@@ -83,8 +82,8 @@ const validateClient = [
     body('telefono')
         .notEmpty()
         .withMessage('Telefono è obbligatorio')
-        .matches(/^\+39\s?\d{3}\s?\d{3}\s?\d{4}$|^\d{3}\s?\d{3}\s?\d{4}$/)
-        .withMessage('Formato telefono non valido (es: +39 123 456 7890 o 123 456 7890)'),
+        .matches(/^[\+]?[0-9\s\-\(\)]{8,15}$/)
+        .withMessage('Formato telefono non valido'),
     
     body('indirizzo')
         .optional()
@@ -99,12 +98,12 @@ const validateClient = [
         .withMessage('Città può contenere solo lettere, spazi, apostrofi, punti e trattini'),
     
     body('cap')
-        .optional()
+        .optional({ checkFalsy: true })
         .matches(/^\d{5}$/)
         .withMessage('CAP deve essere di 5 cifre'),
     
     body('provincia')
-        .optional()
+        .optional({ checkFalsy: true })
         .isLength({ min: 2, max: 2 })
         .withMessage('Provincia deve essere di 2 caratteri')
         .matches(/^[A-Z]{2}$/)
@@ -199,6 +198,9 @@ const handleValidationErrors = (req, res, next) => {
     const errors = validationResult(req);
     
     if (!errors.isEmpty()) {
+        console.log('Errori di validazione:', JSON.stringify(errors.array(), null, 2));
+        console.log('Dati ricevuti:', JSON.stringify(req.body, null, 2));
+        
         return res.status(400).json({
             error: 'Errori di validazione',
             code: 'VALIDATION_ERROR',

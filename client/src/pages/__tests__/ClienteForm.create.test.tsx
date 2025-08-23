@@ -3,10 +3,20 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { render } from '../../test/utils'
 import ClienteForm from '../ClienteForm'
-import { setupMockClientiService, mockClientiService } from '../../test/mocks'
 
+// Mock del servizio clienti
 vi.mock('../../services/clientiService', () => ({
-  default: mockClientiService
+  default: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    deleteCliente: vi.fn(),
+    getStats: vi.fn(),
+    getClienti: vi.fn(),
+    getProvenienzaContatti: vi.fn(),
+  }
 }))
 
 vi.mock('react-router-dom', async () => {
@@ -18,12 +28,26 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
+vi.mock('react-toastify', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+  ToastContainer: () => null,
+}))
+
 describe('ClienteForm - Creazione Nuovo Cliente', () => {
   const user = userEvent.setup()
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
-    setupMockClientiService()
+    // Importa il mock del servizio
+    const clientiService = await import('../../services/clientiService')
+    // Setup dei mock
+    vi.mocked(clientiService.default.create).mockResolvedValue({ 
+      message: 'Cliente creato con successo',
+      clienteId: 99
+    })
   })
 
   it('dovrebbe inviare i dati del cliente con codice fiscale', async () => {
@@ -33,17 +57,22 @@ describe('ClienteForm - Creazione Nuovo Cliente', () => {
     await user.type(screen.getByLabelText('Cognome *'), 'Rossi')
     await user.type(screen.getByLabelText('Codice Fiscale *'), 'RSSMRA80A01H501U')
     await user.type(screen.getByLabelText('Telefono'), '1234567890')
+    
+    // Clicca il consenso privacy (obbligatorio)
+    await user.click(screen.getByLabelText('Consenso Privacy *'))
 
     const saveButton = screen.getByRole('button', { name: /Crea Cliente/ })
     await user.click(saveButton)
 
-    await waitFor(() => {
-      expect(mockClientiService.create).toHaveBeenCalledWith(
+    await waitFor(async () => {
+      const clientiService = await import('../../services/clientiService')
+      expect(vi.mocked(clientiService.default.create)).toHaveBeenCalledWith(
         expect.objectContaining({
           nome: 'Mario',
           cognome: 'Rossi',
           codiceFiscale: 'RSSMRA80A01H501U',
-          telefono: '1234567890'
+          telefono: '1234567890',
+          consensoPrivacy: true
         })
       )
     })
