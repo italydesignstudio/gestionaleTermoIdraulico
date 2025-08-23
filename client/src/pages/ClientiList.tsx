@@ -258,7 +258,7 @@ const ClientiList: React.FC = () => {
                   </thead>
                   <tbody>
                     {data.clienti.map((cliente) => (
-                      <tr key={cliente.clienteId}>
+                      <tr key={cliente.clienteid}>
                         <td>
                           <div>
                             <strong>{cliente.nome} {cliente.cognome}</strong>
@@ -306,7 +306,7 @@ const ClientiList: React.FC = () => {
                           <div className="btn-group btn-group-sm">
                             <Button
                               as={Link}
-                              to={`/clienti/${cliente.clienteId}`}
+                              to={`/clienti/${cliente.clienteid}`}
                               variant="outline-primary"
                               size="sm"
                               title="Visualizza dettagli"
@@ -315,7 +315,7 @@ const ClientiList: React.FC = () => {
                             </Button>
                             <Button
                               as={Link}
-                              to={`/clienti/${cliente.clienteId}/modifica`}
+                              to={`/clienti/${cliente.clienteid}/modifica`}
                               variant="outline-warning"
                               size="sm"
                               title="Modifica cliente"
@@ -328,7 +328,7 @@ const ClientiList: React.FC = () => {
                                 size="sm"
                                 title="Elimina cliente"
                                 onClick={() => handleDeleteCliente(
-                                  cliente.clienteId, 
+                                  cliente.clienteid, 
                                   cliente.nome, 
                                   cliente.cognome
                                 )}

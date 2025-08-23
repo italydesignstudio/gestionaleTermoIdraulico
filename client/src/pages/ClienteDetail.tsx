@@ -15,8 +15,13 @@ const ClienteDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (id) {
+    console.log('ClienteDetail - ID ricevuto:', id, 'tipo:', typeof id);
+    if (id && id !== 'undefined') {
       loadCliente();
+    } else {
+      console.error('ID cliente non valido o undefined:', id);
+      toast.error('ID cliente non valido');
+      navigate('/clienti');
     }
   }, [id]);
 
@@ -103,7 +108,7 @@ const ClienteDetail: React.FC = () => {
                   Torna alla lista
                 </button>
                 <Link
-                  to={`/clienti/${cliente.clienteId}/modifica`}
+                  to={`/clienti/${cliente.clienteid}/modifica`}
                   className="btn btn-primary"
                 >
                   <i className="fas fa-edit me-2"></i>
@@ -303,7 +308,7 @@ const ClienteDetail: React.FC = () => {
       <div className="row mt-4">
         <div className="col-12">
           <DocumentiCliente 
-            clienteId={cliente.clienteId} 
+            clienteId={cliente.clienteid} 
             nomeCliente={`${cliente.nome} ${cliente.cognome}`} 
           />
         </div>
@@ -313,7 +318,7 @@ const ClienteDetail: React.FC = () => {
       <div className="row mt-4">
         <div className="col-12">
           <ComunicazioniCliente 
-            clienteId={cliente.clienteId} 
+            clienteId={cliente.clienteid} 
             nomeCliente={`${cliente.nome} ${cliente.cognome}`}
             telefono={cliente.telefono || undefined}
             email={cliente.email}

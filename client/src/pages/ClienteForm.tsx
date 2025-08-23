@@ -49,8 +49,13 @@ const ClienteForm: React.FC = () => {
   ];
 
   useEffect(() => {
-    if (isEditing && id) {
+    console.log('ClienteForm - ID ricevuto:', id, 'tipo:', typeof id, 'isEditing:', isEditing);
+    if (isEditing && id && id !== 'undefined') {
       loadCliente();
+    } else if (isEditing && (!id || id === 'undefined')) {
+      console.error('ID cliente non valido per modifica:', id);
+      toast.error('ID cliente non valido');
+      navigate('/clienti');
     }
   }, [id, isEditing]);
 
