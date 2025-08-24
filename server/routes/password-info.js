@@ -186,10 +186,10 @@ router.post('/', authenticateToken, requireOperatorOrAdmin, validatePasswordInfo
         // Inserisci nuovo record
         const result = await db.query(`
             INSERT INTO password_info (
-                titolo, categoria, url, username, email, passwordCifrata, 
-                codici, descrizione, note, utenteCreazione, utenteModifica
+                titolo, categoria, url, username, email, passwordcifrata, 
+                codici, descrizione, note, utentecreazione, utentemodifica
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-            RETURNING infoId
+            RETURNING infoid
         `, [
             titolo, categoria, url, username, email, passwordCifrata,
             codici, descrizione, note, req.user.utenteId, req.user.utenteId
@@ -244,8 +244,8 @@ router.put('/:id', authenticateToken, requireOperatorOrAdmin, validatePasswordIn
         const result = await db.query(`
             UPDATE password_info SET 
                 titolo = $1, categoria = $2, url = $3, username = $4, email = $5,
-                passwordCifrata = $6, codici = $7, descrizione = $8, note = $9,
-                dataModifica = NOW(), utenteModifica = $10
+                passwordcifrata = $6, codici = $7, descrizione = $8, note = $9,
+                datamodifica = NOW(), utentemodifica = $10
             WHERE infoid = $11
         `, [
             titolo, categoria, url, username, email, passwordCifrata,

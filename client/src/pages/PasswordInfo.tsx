@@ -177,17 +177,6 @@ const PasswordInfoPage: React.FC = () => {
                   <Plus className="me-1" size={16} />
                   Nuova Password
                 </button>
-                <button
-                  type="button"
-                  className="btn btn-outline-info btn-sm ms-2"
-                  onClick={() => {
-                    console.log('API URL:', import.meta.env.VITE_API_BASE_URL);
-                    console.log('Token:', localStorage.getItem('authToken')?.substring(0, 20) + '...');
-                    loadPasswordInfos();
-                  }}
-                >
-                  Test API
-                </button>
               </div>
             </div>
 
@@ -386,10 +375,19 @@ const PasswordInfoPage: React.FC = () => {
                   <div className="spinner-border text-primary" role="status">
                     <span className="visually-hidden">Caricamento...</span>
                   </div>
+                  <p className="mt-2 text-muted">Caricamento informazioni password...</p>
                 </div>
-              ) : filteredPasswordInfos.length === 0 ? (
+              ) : passwordInfos.length === 0 ? (
                 <div className="text-center py-4">
-                  <p className="text-muted">Nessuna informazione trovata</p>
+                  <Shield className="mx-auto mb-3 text-muted" size={48} />
+                  <p className="text-muted">Nessuna informazione password trovata</p>
+                  <button 
+                    className="btn btn-primary"
+                    onClick={() => setShowForm(true)}
+                  >
+                    <Plus className="me-1" size={16} />
+                    Aggiungi la prima password
+                  </button>
                 </div>
               ) : (
                 <div className="table-responsive">
