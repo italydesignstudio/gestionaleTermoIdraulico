@@ -57,10 +57,13 @@ const PasswordInfoPage: React.FC = () => {
     try {
       setLoading(true);
       const data = await passwordInfoService.getAll();
-      setPasswordInfos(data);
-    } catch (error) {
+      console.log('Dati caricati:', data); // Per debug
+      setPasswordInfos(data || []);
+    } catch (error: any) {
       console.error('Errore nel caricamento delle informazioni:', error);
-      toast.error('Errore nel caricamento delle informazioni');
+      const errorMessage = error.response?.data?.error || error.message || 'Errore nel caricamento delle informazioni';
+      toast.error(errorMessage);
+      setPasswordInfos([]);
     } finally {
       setLoading(false);
     }
@@ -101,6 +104,11 @@ const PasswordInfoPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!formData.titolo.trim() || !formData.password.trim()) {
+      toast.error('Titolo e password sono obbligatori');
+      return;
+    }
+    
     try {
       if (editingInfo) {
         await passwordInfoService.update(editingInfo.infoId, formData);
@@ -112,9 +120,10 @@ const PasswordInfoPage: React.FC = () => {
       
       await loadPasswordInfos();
       resetForm();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Errore nella gestione del form:', error);
-      toast.error('Errore nella gestione del form');
+      const errorMessage = error.response?.data?.error || error.message || 'Errore nella gestione del form';
+      toast.error(errorMessage);
     }
   };
 
@@ -127,9 +136,10 @@ const PasswordInfoPage: React.FC = () => {
       await passwordInfoService.delete(infoId);
       toast.success('Informazione eliminata con successo');
       await loadPasswordInfos();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Errore nell\'eliminazione:', error);
-      toast.error('Errore nell\'eliminazione dell\'informazione');
+      const errorMessage = error.response?.data?.error || error.message || 'Errore nell\'eliminazione dell\'informazione';
+      toast.error(errorMessage);
     }
   };
 
@@ -166,6 +176,17 @@ const PasswordInfoPage: React.FC = () => {
                 >
                   <Plus className="me-1" size={16} />
                   Nuova Password
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-info btn-sm ms-2"
+                  onClick={() => {
+                    console.log('API URL:', import.meta.env.VITE_API_BASE_URL);
+                    console.log('Token:', localStorage.getItem('authToken')?.substring(0, 20) + '...');
+                    loadPasswordInfos();
+                  }}
+                >
+                  Test API
                 </button>
               </div>
             </div>
@@ -480,7 +501,12 @@ const PasswordInfoPage: React.FC = () => {
                       <FileText className="me-2 text-muted" size={16} />
                       <div>
                         <small className="text-muted">Data Creazione</small>
-                        <div>{new Date(selectedInfo.dataInserimento).toLocaleString('it-IT')}</div>
+                        <div>
+                          {selectedInfo.dataInserimento ? 
+                            new Date(selectedInfo.dataInserimento).toLocaleString('it-IT') :
+                            'Non disponibile'
+                          }
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -599,15 +625,21 @@ const PasswordInfoPage: React.FC = () => {
                                   try {
                                     setRevealingId(selectedInfo.infoId);
                                     const result = await passwordInfoService.reveal(selectedInfo.infoId);
-                                    setSelectedInfo(prev => prev ? { ...prev, password: result.password } : null);
-                                    setPasswordInfos(prev => prev.map(item => 
-                                      item.infoId === selectedInfo.infoId 
-                                        ? { ...item, password: result.password }
-                                        : item
-                                    ));
-                                  } catch (error) {
+                                    if (result && result.password) {
+                                      setSelectedInfo(prev => prev ? { ...prev, password: result.password } : null);
+                                      setPasswordInfos(prev => prev.map(item => 
+                                        item.infoId === selectedInfo.infoId 
+                                          ? { ...item, password: result.password }
+                                          : item
+                                      ));
+                                      toast.success('Password rivelata con successo');
+                                    } else {
+                                      throw new Error('Password non ricevuta dal server');
+                                    }
+                                  } catch (error: any) {
                                     console.error('Errore nella rivelazione:', error);
-                                    toast.error('Errore nella rivelazione della password');
+                                    const errorMessage = error.response?.data?.error || error.message || 'Errore nella rivelazione della password';
+                                    toast.error(errorMessage);
                                   } finally {
                                     setRevealingId(null);
                                   }

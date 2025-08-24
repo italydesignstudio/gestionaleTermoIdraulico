@@ -29,17 +29,25 @@ router.get('/', authenticateToken, requireOperatorOrAdmin, async (req, res) => {
         const offset = (page - 1) * limit;
         const dataSql = `
             SELECT 
-                pi.infoId, pi.titolo, pi.categoria, pi.url, pi.username, 
-                pi.email, pi.codici, pi.descrizione, pi.note,
-                pi.dataInserimento, pi.dataModifica,
-                u1.nome as nomeUtenteCreazione,
-                u1.cognome as cognomeUtenteCreazione,
-                u2.nome as nomeUtenteModifica,
-                u2.cognome as cognomeUtenteModifica,
-                '••••••••' as passwordMascherata
+                pi.infoid as "infoId", 
+                pi.titolo, 
+                pi.categoria, 
+                pi.url, 
+                pi.username, 
+                pi.email, 
+                pi.codici, 
+                pi.descrizione, 
+                pi.note,
+                pi.datainserimento as "dataInserimento", 
+                pi.datamodifica as "dataModifica",
+                u1.nome as "nomeUtenteCreazione",
+                u1.cognome as "cognomeUtenteCreazione",
+                u2.nome as "nomeUtenteModifica",
+                u2.cognome as "cognomeUtenteModifica",
+                '••••••••' as "passwordMascherata"
             FROM password_info pi
-            LEFT JOIN utenti u1 ON pi.utenteCreazione = u1.utenteId
-            LEFT JOIN utenti u2 ON pi.utenteModifica = u2.utenteId
+            LEFT JOIN utenti u1 ON pi.utentecreazione = u1.utenteid
+            LEFT JOIN utenti u2 ON pi.utentemodifica = u2.utenteid
             ${whereClause}
             ORDER BY pi.categoria, pi.titolo
             LIMIT $${params.length + 1} OFFSET $${params.length + 2}
@@ -107,15 +115,28 @@ router.get('/:id', authenticateToken, requireOperatorOrAdmin, async (req, res) =
 
         const passwordInfo = await db.get(`
             SELECT 
-                pi.*,
-                u1.nome as nomeUtenteCreazione,
-                u1.cognome as cognomeUtenteCreazione,
-                u2.nome as nomeUtenteModifica,
-                u2.cognome as cognomeUtenteModifica
+                pi.infoid as "infoId",
+                pi.titolo,
+                pi.categoria,
+                pi.url,
+                pi.username,
+                pi.email,
+                pi.passwordcifrata,
+                pi.codici,
+                pi.descrizione,
+                pi.note,
+                pi.datainserimento as "dataInserimento",
+                pi.datamodifica as "dataModifica",
+                pi.utentecreazione as "utenteCreazione",
+                pi.utentemodifica as "utenteModifica",
+                u1.nome as "nomeUtenteCreazione",
+                u1.cognome as "cognomeUtenteCreazione",
+                u2.nome as "nomeUtenteModifica",
+                u2.cognome as "cognomeUtenteModifica"
             FROM password_info pi
-            LEFT JOIN utenti u1 ON pi.utenteCreazione = u1.utenteId
-            LEFT JOIN utenti u2 ON pi.utenteModifica = u2.utenteId
-            WHERE pi.infoId = $1
+            LEFT JOIN utenti u1 ON pi.utentecreazione = u1.utenteid
+            LEFT JOIN utenti u2 ON pi.utentemodifica = u2.utenteid
+            WHERE pi.infoid = $1
         `, [id]);
 
         if (!passwordInfo) {
@@ -127,10 +148,10 @@ router.get('/:id', authenticateToken, requireOperatorOrAdmin, async (req, res) =
 
         // Decifra la password solo quando richiesta esplicitamente
         try {
-            passwordInfo.passwordDecifrata = db.decrypt(passwordInfo.passwordcifrata);
+            passwordInfo.password = db.decrypt(passwordInfo.passwordcifrata);
         } catch (error) {
             console.error('Errore decifratura password:', error);
-            passwordInfo.passwordDecifrata = 'Errore decifratura';
+            passwordInfo.password = 'Errore decifratura';
         }
 
         // Rimuovi la password cifrata dal risultato
@@ -140,7 +161,7 @@ router.get('/:id', authenticateToken, requireOperatorOrAdmin, async (req, res) =
         db.logActivity(req.user.utenteId, 'VIEW', 'password_info', id, `Visualizzazione dati sensibili: ${passwordInfo.titolo}`);
 
         res.json({
-            passwordInfo
+            info: passwordInfo
         });
 
     } catch (error) {
@@ -208,7 +229,7 @@ router.put('/:id', authenticateToken, requireOperatorOrAdmin, validatePasswordIn
         } = req.body;
 
         // Verifica se record esiste
-        const existingRecord = await db.get('SELECT infoId FROM password_info WHERE infoId = $1', [id]);
+        const existingRecord = await db.get('SELECT infoid FROM password_info WHERE infoid = $1', [id]);
         if (!existingRecord) {
             return res.status(404).json({
                 error: 'Informazione non trovata',
@@ -225,7 +246,7 @@ router.put('/:id', authenticateToken, requireOperatorOrAdmin, validatePasswordIn
                 titolo = $1, categoria = $2, url = $3, username = $4, email = $5,
                 passwordCifrata = $6, codici = $7, descrizione = $8, note = $9,
                 dataModifica = NOW(), utenteModifica = $10
-            WHERE infoId = $11
+            WHERE infoid = $11
         `, [
             titolo, categoria, url, username, email, passwordCifrata,
             codici, descrizione, note, req.user.utenteId, id
@@ -266,7 +287,7 @@ router.delete('/:id', authenticateToken, requireOperatorOrAdmin, async (req, res
         const { id } = req.params;
 
         // Recupera info per il log prima dell'eliminazione
-        const existingRecord = await db.get('SELECT titolo FROM password_info WHERE infoId = $1', [id]);
+        const existingRecord = await db.get('SELECT titolo FROM password_info WHERE infoid = $1', [id]);
         if (!existingRecord) {
             return res.status(404).json({
                 error: 'Informazione non trovata',
@@ -275,7 +296,7 @@ router.delete('/:id', authenticateToken, requireOperatorOrAdmin, async (req, res
         }
 
         // Elimina record
-        const result = await db.query('DELETE FROM password_info WHERE infoId = $1', [id]);
+        const result = await db.query('DELETE FROM password_info WHERE infoid = $1', [id]);
 
         if (result.rowCount === 0) {
             return res.status(404).json({
@@ -307,9 +328,9 @@ router.put('/:id/reveal', authenticateToken, requireOperatorOrAdmin, async (req,
         const { id } = req.params;
 
         const passwordInfo = await db.get(`
-            SELECT infoId, titolo, passwordCifrata
+            SELECT infoid as "infoId", titolo, passwordcifrata
             FROM password_info 
-            WHERE infoId = $1
+            WHERE infoid = $1
         `, [id]);
 
         if (!passwordInfo) {

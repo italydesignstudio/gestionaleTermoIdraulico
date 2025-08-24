@@ -1,16 +1,21 @@
 import axios from 'axios';
 import { PasswordInfo, PasswordInfoFormData } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://gestionale-termoidraulico-api.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'https://gestionale-termoidraulico-api.onrender.com/api';
 
 const passwordInfoService = {
   getAll: async (): Promise<PasswordInfo[]> => {
     const token = localStorage.getItem('authToken');
+    if (!token) {
+      throw new Error('Token di accesso non disponibile');
+    }
+    
     const response = await axios.get<{ passwordInfo: PasswordInfo[] }>(`${API_BASE_URL}/password-info`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     
-    return response.data.passwordInfo;
+    console.log('Risposta getAll:', response.data); // Debug
+    return response.data.passwordInfo || [];
   },
 
   getById: async (id: number): Promise<PasswordInfo> => {
@@ -49,10 +54,15 @@ const passwordInfoService = {
 
   reveal: async (id: number): Promise<{ password: string }> => {
     const token = localStorage.getItem('authToken');
+    if (!token) {
+      throw new Error('Token di accesso non disponibile');
+    }
+    
     const response = await axios.put<{ password: string }>(`${API_BASE_URL}/password-info/${id}/reveal`, {}, {
       headers: { Authorization: `Bearer ${token}` }
     });
     
+    console.log('Risposta reveal:', response.data); // Debug
     return response.data;
   }
 };
